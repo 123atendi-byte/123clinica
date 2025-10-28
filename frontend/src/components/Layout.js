@@ -17,7 +17,8 @@ const Layout = () => {
     <div className="layout">
       <nav className="sidebar">
         <div className="sidebar-header">
-          <h2>Clínica Sistema</h2>
+          <h2>Clínica 123Atendi</h2>
+          <p className="subtitle">Sistema para clínicas inteligentes</p>
           <p className="user-name">{user?.nome}</p>
         </div>
 

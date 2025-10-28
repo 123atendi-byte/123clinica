@@ -33,8 +33,8 @@ const Login = () => {
           <div className="logo">
             <div className="logo-icon">+</div>
           </div>
-          <h1>Clínica Sistema</h1>
-          <p>Sistema de Agendamento</p>
+          <h1>Clínica 123Atendi</h1>
+          <p>Sistema para clínicas inteligentes</p>
         </div>
 
         {error && <div className="error">{error}</div>}
