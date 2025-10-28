@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.7"
 
 # Stack de Deploy para Portainer - Sistema de Agendamento Clínica
 # Domínio: clinica.123atendi.com.br
@@ -9,13 +9,12 @@ services:
   backend:
     image: 123atendi/clinica-agendamento-backend:latest
     networks:
-      - clinica-internal
-      - externa
+      - minha_rede
     environment:
       # Configurações de ambiente (editáveis no Portainer)
       - NODE_ENV=production
       - PORT=3001
-      - JWT_SECRET=${JWT_SECRET:-seu-secret-super-seguro-aqui-change-me}
+      - JWT_SECRET=d710f46cf17d397b02202514a56f963a3ecc68a87ac560fcedbd64978c910f3c533981eb077a21d4dcd4d1f1e0353abeed998bcf8703b3da6b0f4960b1c9ae9a
       - CORS_ORIGIN=https://clinica.123atendi.com.br
     volumes:
       # Persistência do banco SQLite
@@ -26,96 +25,52 @@ services:
       placement:
         constraints:
           - node.role == manager
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
       labels:
-        # Habilitar Traefik
-        traefik.enable: "true"
-
-        # Configuração da rede Docker para Traefik
-        traefik.docker.network: "externa"
-
-        # Configuração do roteador HTTP para API
-        traefik.http.routers.clinica-api.rule: "Host(`clinica.123atendi.com.br`) && PathPrefix(`/api`)"
-        traefik.http.routers.clinica-api.entrypoints: "websecure"
-        traefik.http.routers.clinica-api.priority: "10"
-        traefik.http.routers.clinica-api.tls.certresolver: "le"
-        traefik.http.routers.clinica-api.service: "clinica-api"
-
-        # Configuração do serviço
-        traefik.http.services.clinica-api.loadbalancer.server.port: "3001"
-        traefik.http.services.clinica-api.loadbalancer.passHostHeader: "true"
-
-        # Middleware de CORS para API
-        traefik.http.middlewares.clinica-cors.headers.accesscontrolallowmethods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
-        traefik.http.middlewares.clinica-cors.headers.accesscontrolallowheaders: "Content-Type,Authorization,X-Requested-With"
-        traefik.http.middlewares.clinica-cors.headers.accesscontrolalloworiginlist: "https://clinica.123atendi.com.br"
-        traefik.http.middlewares.clinica-cors.headers.accesscontrolmaxage: "100"
-        traefik.http.middlewares.clinica-cors.headers.addvaryheader: "true"
-
-        # Aplicar middleware de CORS
-        traefik.http.routers.clinica-api.middlewares: "clinica-cors"
+        - traefik.enable=true
+        - traefik.http.routers.clinica-api.rule=Host(`clinica.123atendi.com.br`) && PathPrefix(`/api`)
+        - traefik.http.routers.clinica-api.entrypoints=web,websecure
+        - traefik.http.routers.clinica-api.priority=10
+        - traefik.http.services.clinica-api.loadbalancer.server.port=3001
+        - traefik.http.routers.clinica-api.service=clinica-api
+        - traefik.http.routers.clinica-api.tls.certresolver=letsencryptresolver
 
   # Frontend React
   frontend:
     image: 123atendi/clinica-agendamento-frontend:latest
     networks:
-      - clinica-internal
-      - externa
+      - minha_rede
     environment:
       # URL da API (editável no Portainer)
       - REACT_APP_API_URL=https://clinica.123atendi.com.br/api
-    depends_on:
-      - backend
     deploy:
       mode: replicated
       replicas: 1
       placement:
         constraints:
           - node.role == manager
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
       labels:
-        # Habilitar Traefik
-        traefik.enable: "true"
-
-        # Configuração da rede Docker para Traefik
-        traefik.docker.network: "externa"
-
-        # Configuração do roteador HTTP para Frontend
-        traefik.http.routers.clinica-frontend.rule: "Host(`clinica.123atendi.com.br`)"
-        traefik.http.routers.clinica-frontend.entrypoints: "websecure"
-        traefik.http.routers.clinica-frontend.priority: "1"
-        traefik.http.routers.clinica-frontend.tls.certresolver: "le"
-        traefik.http.routers.clinica-frontend.service: "clinica-frontend"
-
-        # Configuração do serviço
-        traefik.http.services.clinica-frontend.loadbalancer.server.port: "80"
-        traefik.http.services.clinica-frontend.loadbalancer.passHostHeader: "true"
-
-        # Middleware de compressão
-        traefik.http.middlewares.clinica-compress.compress: "true"
-
-        # Aplicar middleware de compressão
-        traefik.http.routers.clinica-frontend.middlewares: "clinica-compress"
+        - traefik.enable=true
+        - traefik.http.routers.clinica-frontend.rule=Host(`clinica.123atendi.com.br`)
+        - traefik.http.routers.clinica-frontend.entrypoints=web,websecure
+        - traefik.http.routers.clinica-frontend.priority=1
+        - traefik.http.services.clinica-frontend.loadbalancer.server.port=80
+        - traefik.http.routers.clinica-frontend.service=clinica-frontend
+        - traefik.http.routers.clinica-frontend.tls.certresolver=letsencryptresolver
 
 networks:
-  # Rede interna para comunicação entre containers
-  clinica-internal:
-    driver: overlay
-    internal: true
-
-  # Rede externa para Traefik (já deve existir no Swarm)
-  externa:
+  minha_rede:
     external: true
+    name: minha_rede
 
 volumes:
   # Volume para persistência do banco de dados SQLite
   clinica-db:
-    driver: local
+    external: false
