@@ -311,8 +311,8 @@
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
-  padding: 0.75rem;
-  margin-bottom: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
   transition: all 0.2s;
 }
 
@@ -380,4 +380,164 @@
 
 .btn-icon-mini.btn-delete:hover {
   color: #ef4444;
+}
+
+/* Visualização Mensal */
+.month-view {
+  margin-top: 2rem;
+}
+
+.month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.month-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.month-navigation {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #e5e7eb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.month-grid-header {
+  display: contents;
+}
+
+.month-day-header {
+  background: #f9fafb;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.month-day-cell {
+  background: white;
+  min-height: 120px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.month-day-cell.other-month {
+  background: #f9fafb;
+  opacity: 0.5;
+}
+
+.month-day-cell.today {
+  background: #f0fdf4;
+  border: 2px solid #22c55e;
+}
+
+.month-day-number {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.month-day-cell.today .month-day-number {
+  color: #22c55e;
+}
+
+.month-day-consultas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+}
+
+.month-consulta-dot {
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  background: #22c55e;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.month-consulta-dot:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.month-consulta-dot.confirmada {
+  background: #3b82f6;
+}
+
+.month-consulta-dot.realizada {
+  background: #f59e0b;
+}
+
+.month-consulta-dot.cancelada {
+  background: #ef4444;
+}
+
+.month-day-count {
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+@media (max-width: 1200px) {
+  .month-day-cell {
+    min-height: 100px;
+  }
+
+  .month-consulta-dot {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .month-grid {
+    grid-template-columns: repeat(7, minmax(80px, 1fr));
+  }
+
+  .month-day-cell {
+    min-height: 80px;
+    padding: 0.25rem;
+  }
+
+  .month-day-number {
+    font-size: 0.8rem;
+  }
+
+  .month-consulta-dot {
+    display: none;
+  }
+
+  .month-day-count {
+    display: block;
+  }
 }

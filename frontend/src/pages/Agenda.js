@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { agendaService, medicosService, bloqueiosService } from '../services/api';
-import { FaCalendarAlt, FaEdit, FaTrash, FaClock, FaUser, FaFilter, FaChevronLeft, FaChevronRight, FaCalendarWeek, FaBan, FaLock, FaUnlock } from 'react-icons/fa';
+import { FaCalendarAlt, FaEdit, FaTrash, FaClock, FaUser, FaFilter, FaChevronLeft, FaChevronRight, FaCalendarWeek, FaBan, FaLock, FaUnlock, FaCalendar } from 'react-icons/fa';
 import './Agenda.css';
 import './AgendaBloqueios.css';
 
@@ -8,8 +8,9 @@ const Agenda = () => {
   const [medicos, setMedicos] = useState([]);
   const [selectedMedico, setSelectedMedico] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [viewMode, setViewMode] = useState('week'); // 'day' ou 'week'
+  const [viewMode, setViewMode] = useState('week'); // 'day', 'week' ou 'month'
   const [weekStart, setWeekStart] = useState(getMonday(new Date()));
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [consultasSemana, setConsultasSemana] = useState([]);
   const [consultas, setConsultas] = useState([]);
   const [horariosLivres, setHorariosLivres] = useState([]);
@@ -34,7 +35,9 @@ const Agenda = () => {
 
   useEffect(() => {
     if (selectedMedico) {
-      if (viewMode === 'week') {
+      if (viewMode === 'month') {
+        loadAgendaMes();
+      } else if (viewMode === 'week') {
         loadAgendaSemana();
         loadHorariosLivresSemana();
         loadBloqueiosSemana();
@@ -43,7 +46,7 @@ const Agenda = () => {
         loadHorariosLivres();
       }
     }
-  }, [selectedMedico, selectedDate, weekStart, viewMode]);
+  }, [selectedMedico, selectedDate, weekStart, currentMonth, viewMode]);
 
   function getMonday(d) {
     d = new Date(d);
@@ -171,6 +174,30 @@ const Agenda = () => {
     } catch (error) {
       console.error('Erro ao carregar bloqueios:', error);
       setBloqueiosSemana([]);
+    }
+  };
+
+  const loadAgendaMes = async () => {
+    setLoading(true);
+    try {
+      const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+      const dataInicio = formatDate(firstDay);
+      const dataFim = formatDate(lastDay);
+
+      const response = await agendaService.getConsultas({
+        medico_id: selectedMedico,
+        data_inicio: dataInicio,
+        data_fim: dataFim,
+      });
+      const data = Array.isArray(response.data) ? response.data : [];
+      setConsultasSemana(data); // Reutilizando consultasSemana para o mês
+    } catch (error) {
+      console.error('Erro ao carregar consultas do mês:', error);
+      setConsultasSemana([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -302,6 +329,60 @@ const Agenda = () => {
     const today = new Date();
     setWeekStart(getMonday(today));
     setSelectedDate(today.toISOString().split('T')[0]);
+    setCurrentMonth(new Date());
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  const getDaysInMonth = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+
+    const days = [];
+
+    // Dias do mês anterior
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+      days.push({
+        date: new Date(year, month - 1, prevMonthLastDay - i),
+        isCurrentMonth: false
+      });
+    }
+
+    // Dias do mês atual
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({
+        date: new Date(year, month, i),
+        isCurrentMonth: true
+      });
+    }
+
+    // Dias do próximo mês
+    const remainingDays = 42 - days.length; // 6 semanas * 7 dias
+    for (let i = 1; i <= remainingDays; i++) {
+      days.push({
+        date: new Date(year, month + 1, i),
+        isCurrentMonth: false
+      });
+    }
+
+    return days;
+  };
+
+  const getMonthYearString = () => {
+    const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    return `${months[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
   };
 
   const getStatusColor = (status) => {
@@ -348,6 +429,12 @@ const Agenda = () => {
           >
             <FaCalendarWeek /> Semana
           </button>
+          <button
+            className={`btn ${viewMode === 'month' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setViewMode('month')}
+          >
+            <FaCalendar /> Mês
+          </button>
         </div>
       </div>
 
@@ -393,7 +480,63 @@ const Agenda = () => {
         </div>
       </div>
 
-      {viewMode === 'week' ? (
+      {viewMode === 'month' ? (
+        <div className="month-view">
+          <div className="month-header">
+            <button className="btn btn-secondary" onClick={handlePreviousMonth}>
+              <FaChevronLeft /> Mês Anterior
+            </button>
+            <div className="month-title">{getMonthYearString()}</div>
+            <button className="btn btn-secondary" onClick={handleNextMonth}>
+              Próximo Mês <FaChevronRight />
+            </button>
+          </div>
+
+          <div className="month-grid">
+            <div className="month-grid-header">
+              <div className="month-day-header">Dom</div>
+              <div className="month-day-header">Seg</div>
+              <div className="month-day-header">Ter</div>
+              <div className="month-day-header">Qua</div>
+              <div className="month-day-header">Qui</div>
+              <div className="month-day-header">Sex</div>
+              <div className="month-day-header">Sáb</div>
+            </div>
+
+            {getDaysInMonth().map((day, index) => {
+              const consultasDia = getConsultasPorDia(day.date);
+              const isToday = formatDate(day.date) === formatDate(new Date());
+              const dateStr = formatDate(day.date);
+
+              return (
+                <div
+                  key={index}
+                  className={`month-day-cell ${!day.isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`}
+                >
+                  <div className="month-day-number">{day.date.getDate()}</div>
+                  <div className="month-day-consultas">
+                    {consultasDia.slice(0, 3).map((consulta) => (
+                      <div
+                        key={consulta.id}
+                        className={`month-consulta-dot ${consulta.status}`}
+                        onClick={() => handleEdit(consulta)}
+                        title={`${consulta.horario} - ${consulta.paciente.nome}`}
+                      >
+                        {consulta.horario} {consulta.paciente.nome}
+                      </div>
+                    ))}
+                    {consultasDia.length > 3 && (
+                      <div className="month-day-count">
+                        +{consultasDia.length - 3} mais
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : viewMode === 'week' ? (
         <div className="week-view">
           <div className="week-navigation">
             <button className="btn btn-secondary" onClick={handlePreviousWeek}>
