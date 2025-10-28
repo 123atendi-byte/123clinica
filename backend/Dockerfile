@@ -21,6 +21,9 @@ COPY . .
 # Criar diretório para o banco de dados se não existir
 RUN mkdir -p /app/data
 
+# Dar permissão de execução ao script de inicialização
+RUN chmod +x start.sh
+
 # Expor porta do backend
 EXPOSE 3001
 
@@ -28,5 +31,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Comando para iniciar o servidor
-CMD ["node", "server.js"]
+# Comando para iniciar o servidor (roda seed antes se necessário)
+CMD ["sh", "start.sh"]
