@@ -42,6 +42,21 @@ async function seed() {
     }
   );
 
+  // Criar API Key fixa para integração
+  const apiKey = 'clinica_123atendi_2025_key_fixed';
+
+  db.run(
+    'INSERT OR IGNORE INTO api_keys (key, nome, descricao, ativo) VALUES (?, ?, ?, ?)',
+    [apiKey, 'API Key Principal', 'Chave fixa para integração via API', 1],
+    (err) => {
+      if (err) {
+        console.error('Erro ao criar API Key:', err);
+      } else {
+        console.log('✓ API Key criada: ' + apiKey);
+      }
+    }
+  );
+
   // Médicos
   const medicos = [
     { nome: 'Dr. Carlos Silva', crm: 'CRM-SP 123456', especialidade: 'Cardiologia', telefone: '(11) 98765-4321', email: 'carlos.silva@clinica.com' },

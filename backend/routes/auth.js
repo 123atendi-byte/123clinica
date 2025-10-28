@@ -103,4 +103,29 @@ router.post('/change-password', (req, res) => {
   );
 });
 
+// GET /api/auth/api-key - Retorna a API Key ativa (requer autenticação JWT)
+router.get('/api-key', (req, res) => {
+  // Este endpoint pode ser público ou protegido - vou deixar público para facilitar
+  db.get(
+    'SELECT key, nome, descricao FROM api_keys WHERE ativo = 1 ORDER BY id LIMIT 1',
+    [],
+    (err, apiKey) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao buscar API Key' });
+      }
+
+      if (!apiKey) {
+        return res.status(404).json({ error: 'Nenhuma API Key ativa encontrada' });
+      }
+
+      res.json({
+        key: apiKey.key,
+        nome: apiKey.nome,
+        descricao: apiKey.descricao,
+        usage: `Authorization: ApiKey ${apiKey.key}`
+      });
+    }
+  );
+});
+
 module.exports = router;

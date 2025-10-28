@@ -99,6 +99,18 @@ db.serialize(() => {
     )
   `);
 
+  // Tabela de API Keys (chaves fixas para integração)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS api_keys (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT UNIQUE NOT NULL,
+      nome TEXT NOT NULL,
+      descricao TEXT,
+      ativo INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   console.log('✓ Tabelas criadas/verificadas com sucesso');
 });
 
