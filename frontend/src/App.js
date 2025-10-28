@@ -10,6 +10,7 @@ import Agenda from './pages/Agenda';
 import AgendaMedicos from './pages/AgendaMedicos';
 import ApiDocs from './pages/ApiDocs';
 import ChaveAPI from './pages/ChaveAPI';
+import ChangePassword from './pages/ChangePassword';
 import Layout from './components/Layout';
 import './App.css';
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="agenda-medicos" element={<AgendaMedicos />} />
           <Route path="api-docs" element={<ApiDocs />} />
           <Route path="chave-api" element={<ChaveAPI />} />
+          <Route path="change-password" element={<ChangePassword />} />
         </Route>
       </Routes>
     </Router>

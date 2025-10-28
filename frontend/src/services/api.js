@@ -47,6 +47,15 @@ export const authService = {
   },
 
   isAuthenticated: () => !!localStorage.getItem('token'),
+
+  changePassword: async (username, currentPassword, newPassword) => {
+    const response = await api.post('/auth/change-password', {
+      username,
+      currentPassword,
+      newPassword
+    });
+    return response.data;
+  },
 };
 
 // Servi�o de pacientes

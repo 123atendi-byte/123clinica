@@ -31,11 +31,10 @@ router.post('/login', (req, res) => {
         return res.status(401).json({ error: 'Credenciais inválidas' });
       }
 
-      // Gerar token JWT
+      // Gerar token JWT (sem expiração para ambiente de testes)
       const token = jwt.sign(
         { id: user.id, username: user.username, tipo: user.tipo },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
+        process.env.JWT_SECRET
       );
 
       res.json({
@@ -48,6 +47,58 @@ router.post('/login', (req, res) => {
           tipo: user.tipo
         }
       });
+    }
+  );
+});
+
+// POST /api/auth/change-password
+router.post('/change-password', (req, res) => {
+  const { username, currentPassword, newPassword } = req.body;
+
+  if (!username || !currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Nova senha deve ter pelo menos 6 caracteres' });
+  }
+
+  db.get(
+    'SELECT * FROM usuarios WHERE username = ?',
+    [username],
+    async (err, user) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao buscar usuário' });
+      }
+
+      if (!user) {
+        return res.status(401).json({ error: 'Usuário não encontrado' });
+      }
+
+      // Verificar senha atual
+      const validPassword = await bcrypt.compare(currentPassword, user.password);
+
+      if (!validPassword) {
+        return res.status(401).json({ error: 'Senha atual incorreta' });
+      }
+
+      // Hash da nova senha
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Atualizar senha
+      db.run(
+        'UPDATE usuarios SET password = ? WHERE id = ?',
+        [hashedPassword, user.id],
+        function(err) {
+          if (err) {
+            return res.status(500).json({ error: 'Erro ao atualizar senha' });
+          }
+
+          res.json({
+            message: 'Senha alterada com sucesso'
+          });
+        }
+      );
     }
   );
 });

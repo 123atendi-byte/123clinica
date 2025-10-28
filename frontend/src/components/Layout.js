@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
-import { FaCalendarAlt, FaUsers, FaHome, FaSignOutAlt, FaUserMd, FaCalendarCheck, FaClock, FaBook, FaKey } from 'react-icons/fa';
+import { FaCalendarAlt, FaUsers, FaHome, FaSignOutAlt, FaUserMd, FaCalendarCheck, FaClock, FaBook, FaKey, FaLock } from 'react-icons/fa';
 import './Layout.css';
 
 const Layout = () => {
@@ -61,6 +61,11 @@ const Layout = () => {
           <li>
             <NavLink to="/chave-api" className={({ isActive }) => isActive ? 'active' : ''}>
               <FaKey /> Chave API
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/change-password" className={({ isActive }) => isActive ? 'active' : ''}>
+              <FaLock /> Alterar Senha
             </NavLink>
           </li>
         </ul>
