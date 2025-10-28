@@ -1,8 +1,31 @@
 const bcrypt = require('bcryptjs');
 const db = require('./database');
 
+// Função para verificar se o banco já está populado
+function verificarBancoPopulado() {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT COUNT(*) as count FROM pacientes', (err, row) => {
+      if (err) reject(err);
+      else resolve(row.count > 0);
+    });
+  });
+}
+
 async function seed() {
-  console.log('🌱 Iniciando seed do banco de dados...\n');
+  console.log('🌱 Verificando banco de dados...\n');
+
+  // Verificar se já existe dados
+  const jaPopulado = await verificarBancoPopulado();
+
+  if (jaPopulado) {
+    console.log('⚠️  Banco já possui dados. Seed cancelado para evitar duplicações.');
+    console.log('💡 Para repovoar, delete o arquivo clinica.db e execute novamente.\n');
+    db.close();
+    process.exit(0);
+    return;
+  }
+
+  console.log('✓ Banco vazio. Iniciando seed...\n');
 
   // Criar usuário admin
   const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -42,28 +65,28 @@ async function seed() {
 
   console.log(`✓ ${medicos.length} médicos criados`);
 
-  // Pacientes
+  // Pacientes (CPF somente números)
   const pacientes = [
-    { nome: 'Maria Santos', cpf: '123.456.789-01', telefone: '(11) 91234-5601', email: 'maria.santos@email.com', data_nascimento: '1985-03-15', endereco: 'Rua das Flores, 100' },
-    { nome: 'João Silva', cpf: '123.456.789-02', telefone: '(11) 91234-5602', email: 'joao.silva@email.com', data_nascimento: '1990-07-22', endereco: 'Av. Paulista, 200' },
-    { nome: 'Ana Costa', cpf: '123.456.789-03', telefone: '(11) 91234-5603', email: 'ana.costa@email.com', data_nascimento: '1978-11-30', endereco: 'Rua Augusta, 300' },
-    { nome: 'Pedro Oliveira', cpf: '123.456.789-04', telefone: '(11) 91234-5604', email: 'pedro.oliveira@email.com', data_nascimento: '1995-05-18', endereco: 'Rua Consolação, 400' },
-    { nome: 'Carla Souza', cpf: '123.456.789-05', telefone: '(11) 91234-5605', email: 'carla.souza@email.com', data_nascimento: '1988-09-25', endereco: 'Av. Rebouças, 500' },
-    { nome: 'Lucas Pereira', cpf: '123.456.789-06', telefone: '(11) 91234-5606', email: 'lucas.pereira@email.com', data_nascimento: '1992-12-08', endereco: 'Rua Haddock Lobo, 600' },
-    { nome: 'Fernanda Lima', cpf: '123.456.789-07', telefone: '(11) 91234-5607', email: 'fernanda.lima@email.com', data_nascimento: '1980-04-14', endereco: 'Rua Oscar Freire, 700' },
-    { nome: 'Ricardo Alves', cpf: '123.456.789-08', telefone: '(11) 91234-5608', email: 'ricardo.alves@email.com', data_nascimento: '1987-08-20', endereco: 'Av. Faria Lima, 800' },
-    { nome: 'Patrícia Rocha', cpf: '123.456.789-09', telefone: '(11) 91234-5609', email: 'patricia.rocha@email.com', data_nascimento: '1993-02-11', endereco: 'Rua Pamplona, 900' },
-    { nome: 'Marcos Ferreira', cpf: '123.456.789-10', telefone: '(11) 91234-5610', email: 'marcos.ferreira@email.com', data_nascimento: '1975-06-27', endereco: 'Av. Ibirapuera, 1000' },
-    { nome: 'Juliana Martins', cpf: '123.456.789-11', telefone: '(11) 91234-5611', email: 'juliana.martins@email.com', data_nascimento: '1991-10-05', endereco: 'Rua Vergueiro, 1100' },
-    { nome: 'Rafael Cardoso', cpf: '123.456.789-12', telefone: '(11) 91234-5612', email: 'rafael.cardoso@email.com', data_nascimento: '1984-01-19', endereco: 'Rua da Mooca, 1200' },
-    { nome: 'Beatriz Gomes', cpf: '123.456.789-13', telefone: '(11) 91234-5613', email: 'beatriz.gomes@email.com', data_nascimento: '1989-03-28', endereco: 'Av. Angélica, 1300' },
-    { nome: 'Gustavo Ribeiro', cpf: '123.456.789-14', telefone: '(11) 91234-5614', email: 'gustavo.ribeiro@email.com', data_nascimento: '1996-07-16', endereco: 'Rua Estados Unidos, 1400' },
-    { nome: 'Amanda Araújo', cpf: '123.456.789-15', telefone: '(11) 91234-5615', email: 'amanda.araujo@email.com', data_nascimento: '1982-11-23', endereco: 'Av. Brigadeiro, 1500' },
-    { nome: 'Felipe Barbosa', cpf: '123.456.789-16', telefone: '(11) 91234-5616', email: 'felipe.barbosa@email.com', data_nascimento: '1994-05-09', endereco: 'Rua Bela Cintra, 1600' },
-    { nome: 'Camila Mendes', cpf: '123.456.789-17', telefone: '(11) 91234-5617', email: 'camila.mendes@email.com', data_nascimento: '1986-09-12', endereco: 'Av. Europa, 1700' },
-    { nome: 'Bruno Teixeira', cpf: '123.456.789-18', telefone: '(11) 91234-5618', email: 'bruno.teixeira@email.com', data_nascimento: '1990-12-31', endereco: 'Rua Joaquim Floriano, 1800' },
-    { nome: 'Larissa Duarte', cpf: '123.456.789-19', telefone: '(11) 91234-5619', email: 'larissa.duarte@email.com', data_nascimento: '1983-04-07', endereco: 'Av. Santo Amaro, 1900' },
-    { nome: 'Diego Nunes', cpf: '123.456.789-20', telefone: '(11) 91234-5620', email: 'diego.nunes@email.com', data_nascimento: '1997-08-24', endereco: 'Rua Itaim Bibi, 2000' }
+    { nome: 'Maria Santos', cpf: '12345678901', telefone: '(11) 91234-5601', email: 'maria.santos@email.com', data_nascimento: '1985-03-15', endereco: 'Rua das Flores, 100' },
+    { nome: 'João Silva', cpf: '12345678902', telefone: '(11) 91234-5602', email: 'joao.silva@email.com', data_nascimento: '1990-07-22', endereco: 'Av. Paulista, 200' },
+    { nome: 'Ana Costa', cpf: '12345678903', telefone: '(11) 91234-5603', email: 'ana.costa@email.com', data_nascimento: '1978-11-30', endereco: 'Rua Augusta, 300' },
+    { nome: 'Pedro Oliveira', cpf: '12345678904', telefone: '(11) 91234-5604', email: 'pedro.oliveira@email.com', data_nascimento: '1995-05-18', endereco: 'Rua Consolação, 400' },
+    { nome: 'Carla Souza', cpf: '12345678905', telefone: '(11) 91234-5605', email: 'carla.souza@email.com', data_nascimento: '1988-09-25', endereco: 'Av. Rebouças, 500' },
+    { nome: 'Lucas Pereira', cpf: '12345678906', telefone: '(11) 91234-5606', email: 'lucas.pereira@email.com', data_nascimento: '1992-12-08', endereco: 'Rua Haddock Lobo, 600' },
+    { nome: 'Fernanda Lima', cpf: '12345678907', telefone: '(11) 91234-5607', email: 'fernanda.lima@email.com', data_nascimento: '1980-04-14', endereco: 'Rua Oscar Freire, 700' },
+    { nome: 'Ricardo Alves', cpf: '12345678908', telefone: '(11) 91234-5608', email: 'ricardo.alves@email.com', data_nascimento: '1987-08-20', endereco: 'Av. Faria Lima, 800' },
+    { nome: 'Patrícia Rocha', cpf: '12345678909', telefone: '(11) 91234-5609', email: 'patricia.rocha@email.com', data_nascimento: '1993-02-11', endereco: 'Rua Pamplona, 900' },
+    { nome: 'Marcos Ferreira', cpf: '12345678910', telefone: '(11) 91234-5610', email: 'marcos.ferreira@email.com', data_nascimento: '1975-06-27', endereco: 'Av. Ibirapuera, 1000' },
+    { nome: 'Juliana Martins', cpf: '12345678911', telefone: '(11) 91234-5611', email: 'juliana.martins@email.com', data_nascimento: '1991-10-05', endereco: 'Rua Vergueiro, 1100' },
+    { nome: 'Rafael Cardoso', cpf: '12345678912', telefone: '(11) 91234-5612', email: 'rafael.cardoso@email.com', data_nascimento: '1984-01-19', endereco: 'Rua da Mooca, 1200' },
+    { nome: 'Beatriz Gomes', cpf: '12345678913', telefone: '(11) 91234-5613', email: 'beatriz.gomes@email.com', data_nascimento: '1989-03-28', endereco: 'Av. Angélica, 1300' },
+    { nome: 'Gustavo Ribeiro', cpf: '12345678914', telefone: '(11) 91234-5614', email: 'gustavo.ribeiro@email.com', data_nascimento: '1996-07-16', endereco: 'Rua Estados Unidos, 1400' },
+    { nome: 'Amanda Araújo', cpf: '12345678915', telefone: '(11) 91234-5615', email: 'amanda.araujo@email.com', data_nascimento: '1982-11-23', endereco: 'Av. Brigadeiro, 1500' },
+    { nome: 'Felipe Barbosa', cpf: '12345678916', telefone: '(11) 91234-5616', email: 'felipe.barbosa@email.com', data_nascimento: '1994-05-09', endereco: 'Rua Bela Cintra, 1600' },
+    { nome: 'Camila Mendes', cpf: '12345678917', telefone: '(11) 91234-5617', email: 'camila.mendes@email.com', data_nascimento: '1986-09-12', endereco: 'Av. Europa, 1700' },
+    { nome: 'Bruno Teixeira', cpf: '12345678918', telefone: '(11) 91234-5618', email: 'bruno.teixeira@email.com', data_nascimento: '1990-12-31', endereco: 'Rua Joaquim Floriano, 1800' },
+    { nome: 'Larissa Duarte', cpf: '12345678919', telefone: '(11) 91234-5619', email: 'larissa.duarte@email.com', data_nascimento: '1983-04-07', endereco: 'Av. Santo Amaro, 1900' },
+    { nome: 'Diego Nunes', cpf: '12345678920', telefone: '(11) 91234-5620', email: 'diego.nunes@email.com', data_nascimento: '1997-08-24', endereco: 'Rua Itaim Bibi, 2000' }
   ];
 
   pacientes.forEach((paciente) => {
