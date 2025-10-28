@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+// Use caminho relativo '/api' para passar pelo proxy do Nginx do frontend
+const API_URL = '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,7 +10,7 @@ const api = axios.create({
   },
 });
 
-// Interceptor para adicionar token em todas as requisições
+// Interceptor para adicionar token em todas as requisi��es
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -18,12 +19,10 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Serviço de autenticação
+// Servi�o de autentica��o
 export const authService = {
   login: async (username, password) => {
     const response = await api.post('/auth/login', { username, password });
@@ -44,12 +43,10 @@ export const authService = {
     return userStr ? JSON.parse(userStr) : null;
   },
 
-  isAuthenticated: () => {
-    return !!localStorage.getItem('token');
-  },
+  isAuthenticated: () => !!localStorage.getItem('token'),
 };
 
-// Serviço de pacientes
+// Servi�o de pacientes
 export const pacientesService = {
   getAll: () => api.get('/pacientes'),
   getById: (id) => api.get(`/pacientes/${id}`),
@@ -59,7 +56,7 @@ export const pacientesService = {
   delete: (id) => api.delete(`/pacientes/${id}`),
 };
 
-// Serviço de médicos
+// Servi�o de m�dicos
 export const medicosService = {
   getAll: () => api.get('/medicos'),
   getById: (id) => api.get(`/medicos/${id}`),
@@ -68,7 +65,7 @@ export const medicosService = {
   delete: (id) => api.delete(`/medicos/${id}`),
 };
 
-// Serviço de agenda
+// Servi�o de agenda
 export const agendaService = {
   getHorariosLivres: (medicoId, data) =>
     api.get('/agenda/horarios-livres', { params: { medico_id: medicoId, data } }),
@@ -78,8 +75,7 @@ export const agendaService = {
       params: { medico_id: medicoId, data_inicio: dataInicio, data_fim: dataFim }
     }),
 
-  getConsultas: (filters = {}) =>
-    api.get('/agenda', { params: filters }),
+  getConsultas: (filters = {}) => api.get('/agenda', { params: filters }),
 
   agendar: (data) => api.post('/agenda', data),
 
@@ -90,7 +86,7 @@ export const agendaService = {
   deletar: (id) => api.delete(`/agenda/${id}`),
 };
 
-// Serviço de agenda dos médicos
+// Servi�o de agenda dos m�dicos
 export const agendaMedicosService = {
   getAll: () => api.get('/agenda-medicos'),
   getByMedico: (medicoId) => api.get(`/agenda-medicos/${medicoId}`),
@@ -99,7 +95,7 @@ export const agendaMedicosService = {
   delete: (id) => api.delete(`/agenda-medicos/${id}`),
 };
 
-// Serviço de bloqueios
+// Servi�o de bloqueios
 export const bloqueiosService = {
   getAll: (filters = {}) => api.get('/bloqueios', { params: filters }),
   create: (data) => api.post('/bloqueios', data),
