@@ -10,6 +10,9 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Middleware de autenticação
+const verifyToken = require('./middleware/auth');
+
 // Importar rotas
 const authRoutes = require('./routes/auth');
 const pacientesRoutes = require('./routes/pacientes');
@@ -18,13 +21,13 @@ const agendaRoutes = require('./routes/agenda');
 const agendaMedicosRoutes = require('./routes/agendaMedicos');
 const bloqueiosRoutes = require('./routes/bloqueios');
 
-// Usar rotas
+// Usar rotas (auth é pública, demais são protegidas)
 app.use('/api/auth', authRoutes);
-app.use('/api/pacientes', pacientesRoutes);
-app.use('/api/medicos', medicosRoutes);
-app.use('/api/agenda', agendaRoutes);
-app.use('/api/agenda-medicos', agendaMedicosRoutes);
-app.use('/api/bloqueios', bloqueiosRoutes);
+app.use('/api/pacientes', verifyToken, pacientesRoutes);
+app.use('/api/medicos', verifyToken, medicosRoutes);
+app.use('/api/agenda', verifyToken, agendaRoutes);
+app.use('/api/agenda-medicos', verifyToken, agendaMedicosRoutes);
+app.use('/api/bloqueios', verifyToken, bloqueiosRoutes);
 
 // Rota raiz
 app.get('/', (req, res) => {
