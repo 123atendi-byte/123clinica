@@ -1,0 +1,170 @@
+/* Estilos para bloqueios e horários livres na agenda */
+
+.bloqueio-indicator {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 2px solid #ef4444;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #991b1b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 150px;
+  justify-content: center;
+}
+
+.bloqueio-indicator svg {
+  color: #dc2626;
+}
+
+.bloqueio-indicator small {
+  font-size: 0.875rem;
+  color: #7f1d1d;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+.btn-remover-bloqueio {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.btn-remover-bloqueio:hover {
+  background: #fde68a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.no-agenda {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: 2px dashed #9ca3af;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 120px;
+  justify-content: center;
+}
+
+.no-agenda svg {
+  opacity: 0.5;
+}
+
+.horarios-livres-container {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 1px solid #10b981;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.horarios-livres-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #065f46;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.horarios-livres-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.horario-livre-item {
+  background: #10b981;
+  color: white;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+
+.horario-livre-item:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+.mais-horarios {
+  color: #065f46;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-style: italic;
+  padding: 0.25rem 0.5rem;
+}
+
+.btn-bloquear-dia {
+  width: 100%;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 0.6rem;
+  font-size: 0.8rem;
+  margin-top: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-bloquear-dia:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.btn-bloquear-dia:active {
+  transform: translateY(0);
+}
+
+/* Melhorias para day-column */
+.day-column {
+  min-height: 200px;
+}
+
+.day-consultas {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal de bloqueio */
+.modal-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}

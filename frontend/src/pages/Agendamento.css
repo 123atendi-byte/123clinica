@@ -1,0 +1,123 @@
+.agendamento h1 {
+  margin-bottom: 2rem;
+  color: var(--text-dark);
+}
+
+.agendamento-container {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 2rem;
+}
+
+.calendar-card h2,
+.form-card h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-dark);
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.react-calendar {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.react-calendar__tile {
+  padding: 1rem 0.5rem;
+  border-radius: 6px;
+}
+
+.react-calendar__tile--active {
+  background-color: var(--primary-green) !important;
+  color: white;
+}
+
+.react-calendar__tile--now {
+  background-color: #d1fae5;
+}
+
+.react-calendar__tile:enabled:hover {
+  background-color: #f0fdf4;
+}
+
+.react-calendar__navigation button {
+  font-size: 1rem;
+  padding: 0.75rem;
+}
+
+.selected-date {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f0fdf4;
+  border-radius: 6px;
+  text-align: center;
+  color: var(--text-dark);
+}
+
+.selected-date strong {
+  color: var(--primary-green);
+}
+
+.horarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.75rem;
+}
+
+.horario-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.horario-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.horario-option span {
+  display: block;
+  padding: 0.75rem;
+  border: 2px solid var(--border-gray);
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.horario-option:hover span {
+  border-color: var(--primary-green);
+  background-color: #f0fdf4;
+}
+
+.horario-option input[type="radio"]:checked + span {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+  color: white;
+}
+
+.no-horarios {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-gray);
+  background-color: #f9fafb;
+  border-radius: 6px;
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 968px) {
+  .agendamento-container {
+    grid-template-columns: 1fr;
+  }
+
+  .horarios-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  }
+}

@@ -1,0 +1,254 @@
+# Sistema de Agendamento para Clínicas Médicas
+
+Micro-sistema de agendamento de consultas médicas desenvolvido com React, Node.js e SQLite.
+
+## Características
+
+- **Backend**: Node.js + Express + SQLite
+- **Frontend**: React.js com paleta verde e branco
+- **Autenticação**: JWT
+- **Deploy**: Docker + Docker Compose (pronto para Portainer)
+- **Banco de dados**: SQLite (sem necessidade de servidor externo)
+
+## Funcionalidades
+
+- Login de usuários
+- Cadastro e gerenciamento de pacientes
+- Cadastro e gerenciamento de médicos
+- Calendário interativo para agendamento
+- Visualização de horários disponíveis
+- Listagem e gerenciamento de consultas
+- Dashboard com estatísticas
+
+## Estrutura do Projeto
+
+```
+clinica-agendamento/
+├── backend/
+│   ├── routes/          # Rotas da API
+│   ├── database.js      # Configuração do SQLite
+│   ├── server.js        # Servidor Express
+│   ├── seed.js          # Dados fictícios
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/  # Componentes React
+│   │   ├── pages/       # Páginas da aplicação
+│   │   └── services/    # Integração com API
+│   └── Dockerfile
+└── docker-compose.yml
+```
+
+## Instalação Local (Desenvolvimento)
+
+### Pré-requisitos
+
+- Node.js 18+
+- npm ou yarn
+
+### Backend
+
+```bash
+cd backend
+npm install
+npm run seed    # Popular banco com dados fictícios
+npm start       # Iniciar servidor na porta 3001
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm start       # Iniciar em http://localhost:3000
+```
+
+## Deploy com Docker + Traefik
+
+Este projeto está configurado para deploy em produção com **Docker Swarm** e **Traefik** como reverse proxy, com SSL automático via Let's Encrypt.
+
+### Requisitos de Produção
+
+- Docker Swarm inicializado
+- Traefik já configurado e rodando
+- Rede `externa` criada no Swarm
+- DNS apontando `clinica.123atendi.com.br` para o servidor
+
+### Preparação
+
+1. **Gerar JWT Secret seguro**:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+2. **Criar arquivo .env.production**:
+```bash
+cp .env.production.example .env.production
+# Edite .env.production com os valores reais
+```
+
+3. **Build das imagens Docker**:
+```bash
+# Backend
+docker build -t 123atendi/clinica-agendamento-backend:latest ./backend
+
+# Frontend
+docker build -t 123atendi/clinica-agendamento-frontend:latest ./frontend
+```
+
+4. **Push para Docker Hub** (opcional):
+```bash
+docker push 123atendi/clinica-agendamento-backend:latest
+docker push 123atendi/clinica-agendamento-frontend:latest
+```
+
+### Deploy no Docker Swarm
+
+```bash
+# Carregar variáveis de ambiente
+export JWT_SECRET="seu_secret_gerado_aqui"
+
+# Deploy da stack
+docker stack deploy -c docker-compose.yml clinica
+```
+
+### Verificar Deploy
+
+```bash
+# Verificar status dos serviços
+docker stack services clinica
+
+# Verificar logs
+docker service logs clinica_backend -f
+docker service logs clinica_frontend -f
+
+# Verificar se Traefik registrou as rotas
+docker service logs traefik | grep clinica
+```
+
+O sistema estará disponível em:
+- **Frontend**: https://clinica.123atendi.com.br
+- **Backend API**: https://clinica.123atendi.com.br/api
+- **SSL**: Certificado Let's Encrypt automático
+
+### Desenvolvimento Local (sem Traefik)
+
+Para rodar localmente sem Traefik:
+
+```bash
+docker-compose up -d
+```
+
+Acesse em:
+- Frontend: http://localhost
+- Backend API: http://localhost:3001
+
+### Configuração do Traefik
+
+O docker-compose.yml já inclui todos os labels necessários do Traefik:
+
+- ✅ **SSL automático** via Let's Encrypt (certresolver: le)
+- ✅ **HTTPS redirect** automático
+- ✅ **CORS** configurado para clinica.123atendi.com.br
+- ✅ **Compressão Gzip** habilitada
+- ✅ **Health checks** para monitoramento
+- ✅ **Roteamento inteligente** (frontend na raiz, API em /api)
+
+**Consulte o arquivo DEPLOY.md para instruções detalhadas de deploy.**
+
+## Credenciais Padrão
+
+- **Usuário**: admin
+- **Senha**: admin123
+
+## API Endpoints
+
+### Autenticação
+- `POST /api/auth/login` - Login de usuário
+
+### Pacientes
+- `GET /api/pacientes` - Listar pacientes
+- `POST /api/pacientes` - Cadastrar paciente
+- `PUT /api/pacientes/:id` - Atualizar paciente
+- `DELETE /api/pacientes/:id` - Deletar paciente
+
+### Médicos
+- `GET /api/medicos` - Listar médicos
+- `POST /api/medicos` - Cadastrar médico
+- `PUT /api/medicos/:id` - Atualizar médico
+- `DELETE /api/medicos/:id` - Deletar médico
+
+### Agenda
+- `GET /api/agenda/horarios-livres` - Horários disponíveis
+- `GET /api/agenda` - Listar consultas
+- `POST /api/agenda` - Agendar consulta
+- `PUT /api/agenda/:id` - Atualizar consulta
+- `DELETE /api/agenda/:id` - Cancelar consulta
+
+## Dados Fictícios
+
+O sistema inclui:
+- 1 usuário admin
+- 5 médicos de diferentes especialidades
+- 20 pacientes
+- 15 consultas agendadas
+
+Execute `npm run seed` no backend para popular o banco.
+
+## Tecnologias Utilizadas
+
+### Backend
+- Node.js
+- Express
+- SQLite3
+- bcryptjs (criptografia de senhas)
+- jsonwebtoken (autenticação)
+- cors
+
+### Frontend
+- React 18
+- React Router DOM
+- Axios
+- React Calendar
+- React Icons
+
+## Personalização
+
+### Cores
+Edite `frontend/src/index.css`:
+```css
+:root {
+  --primary-green: #22c55e;
+  --primary-green-dark: #16a34a;
+}
+```
+
+### Logo
+Substitua o ícone em `frontend/src/pages/Login.js`
+
+### Horários de Atendimento
+Edite em `backend/routes/agenda.js`:
+```javascript
+const horariosDisponiveis = [
+  '08:00', '08:30', '09:00', ...
+];
+```
+
+## Segurança em Produção
+
+1. Altere o `JWT_SECRET` em `.env`
+2. Configure HTTPS com certificado SSL
+3. Use senhas fortes para usuários
+4. Configure backup do banco de dados SQLite
+5. Limite CORS apenas para domínios autorizados
+
+## Suporte
+
+Para dúvidas ou problemas:
+- Verifique os logs: `docker-compose logs`
+- Backend logs: `docker logs clinica-backend`
+- Frontend logs: `docker logs clinica-frontend`
+
+## Licença
+
+Este projeto é fornecido como demonstração e pode ser livremente adaptado para suas necessidades.

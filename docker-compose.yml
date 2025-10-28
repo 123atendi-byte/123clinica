@@ -1,0 +1,111 @@
+version: "3.8"
+
+services:
+  # Backend Node.js API
+  backend:
+    image: 123atendi/clinica-agendamento-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clinica-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=https://clinica.123atendi.com.br
+    volumes:
+      # Persistência do banco SQLite
+      - clinica-db:/app/data
+      # Mapear o banco para o diretório data dentro do container
+      - ./backend/clinica.db:/app/data/clinica.db
+    networks:
+      - clinica-internal
+      - externa
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        # Habilitar Traefik
+        traefik.enable: "true"
+
+        # Configuração do roteador HTTP para API
+        traefik.http.routers.clinica-api.rule: "Host(`clinica.123atendi.com.br`) && PathPrefix(`/api`)"
+        traefik.http.routers.clinica-api.entrypoints: "websecure"
+        traefik.http.routers.clinica-api.priority: "10"
+        traefik.http.routers.clinica-api.tls.certresolver: "le"
+        traefik.http.routers.clinica-api.service: "clinica-api"
+
+        # Configuração do serviço
+        traefik.http.services.clinica-api.loadbalancer.server.port: "3001"
+        traefik.http.services.clinica-api.loadbalancer.passHostHeader: "true"
+
+        # Middleware de CORS para API
+        traefik.http.middlewares.clinica-cors.headers.accesscontrolallowmethods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+        traefik.http.middlewares.clinica-cors.headers.accesscontrolallowheaders: "Content-Type,Authorization,X-Requested-With"
+        traefik.http.middlewares.clinica-cors.headers.accesscontrolalloworiginlist: "https://clinica.123atendi.com.br"
+        traefik.http.middlewares.clinica-cors.headers.accesscontrolmaxage: "100"
+        traefik.http.middlewares.clinica-cors.headers.addvaryheader: "true"
+
+        # Aplicar middleware de CORS
+        traefik.http.routers.clinica-api.middlewares: "clinica-cors"
+
+  # Frontend React
+  frontend:
+    image: 123atendi/clinica-agendamento-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clinica-frontend
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=https://clinica.123atendi.com.br/api
+    depends_on:
+      - backend
+    networks:
+      - clinica-internal
+      - externa
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        # Habilitar Traefik
+        traefik.enable: "true"
+
+        # Configuração do roteador HTTP para Frontend
+        traefik.http.routers.clinica-frontend.rule: "Host(`clinica.123atendi.com.br`)"
+        traefik.http.routers.clinica-frontend.entrypoints: "websecure"
+        traefik.http.routers.clinica-frontend.priority: "1"
+        traefik.http.routers.clinica-frontend.tls.certresolver: "le"
+        traefik.http.routers.clinica-frontend.service: "clinica-frontend"
+
+        # Configuração do serviço
+        traefik.http.services.clinica-frontend.loadbalancer.server.port: "80"
+        traefik.http.services.clinica-frontend.loadbalancer.passHostHeader: "true"
+
+        # Middleware de compressão
+        traefik.http.middlewares.clinica-compress.compress: "true"
+
+        # Aplicar middleware de compressão
+        traefik.http.routers.clinica-frontend.middlewares: "clinica-compress"
+
+networks:
+  # Rede interna para comunicação entre containers
+  clinica-internal:
+    driver: overlay
+    internal: true
+
+  # Rede externa para Traefik (já deve existir no Swarm)
+  externa:
+    external: true
+
+volumes:
+  # Volume para persistência do banco de dados SQLite
+  clinica-db:
+    driver: local

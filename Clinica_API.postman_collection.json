@@ -1,0 +1,511 @@
+{
+  "info": {
+    "name": "Clínica - Sistema de Agendamento",
+    "description": "API completa para sistema de agendamento de clínicas médicas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Autenticação",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pacientes",
+      "item": [
+        {
+          "name": "Listar Todos os Pacientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes",
+              "host": ["{{baseUrl}}"],
+              "path": ["pacientes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Paciente (por CPF, Nome ou ID)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/search?q=João",
+              "host": ["{{baseUrl}}"],
+              "path": ["pacientes", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "João",
+                  "description": "Termo de busca: CPF, nome ou ID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Paciente por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["pacientes", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cadastrar Paciente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"João Silva\",\n  \"cpf\": \"12345678900\",\n  \"telefone\": \"11999999999\",\n  \"email\": \"joao@email.com\",\n  \"data_nascimento\": \"1990-01-15\",\n  \"endereco\": \"Rua A, 123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pacientes",
+              "host": ["{{baseUrl}}"],
+              "path": ["pacientes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Paciente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"João Silva Santos\",\n  \"cpf\": \"12345678900\",\n  \"telefone\": \"11988888888\",\n  \"email\": \"joao.santos@email.com\",\n  \"data_nascimento\": \"1990-01-15\",\n  \"endereco\": \"Rua B, 456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["pacientes", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar Paciente",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["pacientes", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Médicos",
+      "item": [
+        {
+          "name": "Listar Todos os Médicos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Médico por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cadastrar Médico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Dr. Carlos Souza\",\n  \"crm\": \"123456\",\n  \"especialidade\": \"Cardiologia\",\n  \"telefone\": \"11977777777\",\n  \"email\": \"dr.carlos@clinica.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/medicos",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Médico",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Dr. Carlos Alberto Souza\",\n  \"crm\": \"123456\",\n  \"especialidade\": \"Cardiologia\",\n  \"telefone\": \"11966666666\",\n  \"email\": \"dr.carlos.souza@clinica.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/medicos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar Médico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/medicos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agenda dos Médicos",
+      "item": [
+        {
+          "name": "Listar Todas as Agendas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda-medicos",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda-medicos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Agenda de um Médico",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda-medicos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda-medicos", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Horário na Agenda",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medico_id\": 1,\n  \"dia_semana\": 1,\n  \"horario_inicio\": \"08:00\",\n  \"horario_fim\": \"12:00\",\n  \"intervalo_minutos\": 30\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agenda-medicos",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda-medicos"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Horário da Agenda",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dia_semana\": 1,\n  \"horario_inicio\": \"08:00\",\n  \"horario_fim\": \"17:00\",\n  \"intervalo_minutos\": 30,\n  \"ativo\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agenda-medicos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda-medicos", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar Horário da Agenda",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda-medicos/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda-medicos", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Consultas/Agendamentos",
+      "item": [
+        {
+          "name": "Listar Consultas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Consultas com Filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda?data_inicio=2025-01-01&data_fim=2025-12-31&medico_id=1&status=agendada",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda"],
+              "query": [
+                {
+                  "key": "data_inicio",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "data_fim",
+                  "value": "2025-12-31"
+                },
+                {
+                  "key": "medico_id",
+                  "value": "1"
+                },
+                {
+                  "key": "status",
+                  "value": "agendada"
+                },
+                {
+                  "key": "paciente_id",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Horários Livres",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda/horarios-livres?medico_id=1&data=2025-11-03",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda", "horarios-livres"],
+              "query": [
+                {
+                  "key": "medico_id",
+                  "value": "1",
+                  "description": "ID do médico"
+                },
+                {
+                  "key": "data",
+                  "value": "2025-11-03",
+                  "description": "Data no formato YYYY-MM-DD"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Datas Disponíveis (Intervalo)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda/datas-disponiveis?medico_id=1&data_inicio=2025-11-01&data_fim=2025-11-30",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda", "datas-disponiveis"],
+              "query": [
+                {
+                  "key": "medico_id",
+                  "value": "1",
+                  "description": "ID do médico"
+                },
+                {
+                  "key": "data_inicio",
+                  "value": "2025-11-01",
+                  "description": "Data início (YYYY-MM-DD)"
+                },
+                {
+                  "key": "data_fim",
+                  "value": "2025-11-30",
+                  "description": "Data fim (YYYY-MM-DD)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agendar Consulta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paciente_id\": 1,\n  \"medico_id\": 1,\n  \"data_consulta\": \"2025-11-03\",\n  \"horario\": \"09:00\",\n  \"observacoes\": \"Primeira consulta\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agenda",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Status da Consulta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"realizada\",\n  \"observacoes\": \"Consulta realizada com sucesso\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/agenda/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar Consulta (Soft Delete)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda/1/cancelar",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda", "1", "cancelar"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deletar Consulta Permanentemente",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/agenda/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["agenda", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

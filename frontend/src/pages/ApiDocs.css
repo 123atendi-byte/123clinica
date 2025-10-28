@@ -1,0 +1,233 @@
+.api-docs {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+.api-info {
+  margin-bottom: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item strong {
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.info-item code,
+.api-docs code {
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #22c55e;
+}
+
+.auth-note {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.auth-note svg {
+  color: #f59e0b;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.auth-note p {
+  margin: 0;
+  color: #92400e;
+  font-size: 0.95rem;
+}
+
+.endpoints-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.category-section {
+  overflow: visible;
+}
+
+.category-title {
+  color: #22c55e;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #22c55e;
+}
+
+.endpoints-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.endpoint-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.endpoint-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.endpoint-header {
+  padding: 1rem;
+  background: #f9fafb;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.endpoint-header:hover {
+  background: #f3f4f6;
+}
+
+.endpoint-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.method-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  min-width: 70px;
+  text-align: center;
+}
+
+.endpoint-path {
+  font-size: 1.1rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.endpoint-description {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-left: 86px;
+}
+
+.endpoint-details {
+  padding: 1.5rem;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.code-section {
+  margin-bottom: 1.5rem;
+}
+
+.code-section:last-child {
+  margin-bottom: 0;
+}
+
+.code-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.code-section h4 svg {
+  color: #22c55e;
+}
+
+.code-block {
+  background: #1f2937;
+  color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.curl-example {
+  background: #0f172a;
+  color: #22c55e;
+}
+
+.notes-section h3 {
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.notes-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notes-section li {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #f9fafb;
+  border-left: 3px solid #22c55e;
+  border-radius: 4px;
+}
+
+.notes-section li strong {
+  color: #22c55e;
+  margin-right: 0.5rem;
+}
+
+.notes-section li code {
+  margin: 0 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .api-docs {
+    padding: 1rem;
+  }
+
+  .endpoint-description {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+
+  .endpoint-title {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
