@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-// Use caminho relativo '/api' para passar pelo proxy do Nginx do frontend
-const API_URL = '/api';
+// Em desenvolvimento: usa localhost:3001
+// Em produção: usa caminho relativo /api (proxy do Nginx)
+const API_URL = process.env.NODE_ENV === 'production'
+  ? '/api'
+  : 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_URL,
