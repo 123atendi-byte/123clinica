@@ -1,66 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { authService } from '../services/api';
-import { FaKey, FaCopy, FaCheckCircle, FaCode, FaInfoCircle, FaLock } from 'react-icons/fa';
+import { FaKey, FaCopy, FaCheckCircle, FaCode, FaInfoCircle, FaLock, FaSync } from 'react-icons/fa';
 import './ChaveAPI.css';
+import api from '../services/api';
 
 const ChaveAPI = () => {
-  const [apiKey, setApiKey] = useState(null);
+  // Estado para armazenar a API Key carregada do backend
+  const [apiKey, setApiKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
+  // Buscar API Key do backend quando o componente montar
   useEffect(() => {
-    fetchApiKey();
+    loadApiKey();
   }, []);
 
-  const fetchApiKey = async () => {
+  const loadApiKey = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/auth/api-key');
-      const data = await response.json();
-      setApiKey(data);
+      setLoading(true);
+      setError('');
+      const response = await api.get('/auth/api-key');
+      setApiKey(response.data.key);
     } catch (err) {
-      setError('Erro ao carregar API Key');
-      console.error(err);
+      console.error('Erro ao carregar API Key:', err);
+      setError('Erro ao carregar a API Key. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCopy = () => {
-    if (apiKey?.key) {
-      navigator.clipboard.writeText(apiKey.key);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(apiKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleGenerateNewKey = async () => {
+    if (!window.confirm('Tem certeza que deseja gerar uma nova API Key? A chave antiga será desativada.')) {
+      return;
+    }
+
+    try {
+      setGenerating(true);
+      const response = await api.post('/auth/generate-api-key');
+      setApiKey(response.data.key);
+      alert('Nova API Key gerada com sucesso! Certifique-se de atualizar suas integrações.');
+    } catch (err) {
+      console.error('Erro ao gerar nova API Key:', err);
+      alert('Erro ao gerar nova API Key. Tente novamente.');
+    } finally {
+      setGenerating(false);
     }
   };
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
-
-  if (loading) {
-    return (
-      <div className="chave-api">
-        <div className="page-header">
-          <h1><FaKey /> Chave API</h1>
-        </div>
-        <div className="card">
-          <p>Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="chave-api">
-        <div className="page-header">
-          <h1><FaKey /> Chave API</h1>
-        </div>
-        <div className="card error-card">
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="chave-api">
@@ -69,104 +63,133 @@ const ChaveAPI = () => {
         <p className="subtitle">Use esta chave permanente para autenticar suas requisições à API</p>
       </div>
 
-      <div className="card token-card">
-        <div className="token-header">
-          <FaLock size={24} className="lock-icon" />
-          <div>
-            <h3>{apiKey?.nome || 'API Key Principal'}</h3>
-            <p className="token-description">
-              {apiKey?.descricao || 'Chave fixa para integração via API'}
-            </p>
+      {loading ? (
+        <div className="card token-card">
+          <div className="loading-state">
+            <FaSync className="spin-icon" />
+            <p>Carregando API Key...</p>
           </div>
         </div>
-
-        <div className="token-box">
-          <div className="token-content">
-            <code>{apiKey?.key}</code>
+      ) : error ? (
+        <div className="card token-card error-card">
+          <div className="error-state">
+            <FaInfoCircle size={24} />
+            <p>{error}</p>
+            <button className="btn-retry" onClick={loadApiKey}>
+              <FaSync /> Tentar Novamente
+            </button>
           </div>
-          <button
-            className={`btn-copy ${copied ? 'copied' : ''}`}
-            onClick={handleCopy}
-            title="Copiar API Key"
-          >
-            {copied ? <FaCheckCircle /> : <FaCopy />}
-            {copied ? 'Copiado!' : 'Copiar'}
-          </button>
         </div>
+      ) : (
+        <div className="card token-card">
+          <div className="token-header">
+            <FaLock size={24} className="lock-icon" />
+            <div className="token-header-content">
+              <h3>API Key Principal</h3>
+              <p className="token-description">
+                Chave fixa para integração via API - Nunca expira
+              </p>
+            </div>
+            <button
+              className="btn-generate"
+              onClick={handleGenerateNewKey}
+              disabled={generating}
+              title="Gerar nova API Key"
+            >
+              <FaSync className={generating ? 'spin-icon-small' : ''} />
+              {generating ? 'Gerando...' : 'Gerar Nova'}
+            </button>
+          </div>
 
-        <div className="token-info">
-          <FaInfoCircle />
-          <span>
-            Esta API Key é permanente e não expira. Use-a em suas integrações externas.
-          </span>
+          <div className="token-box">
+            <div className="token-content">
+              <code>{apiKey}</code>
+            </div>
+            <button
+              className={`btn-copy ${copied ? 'copied' : ''}`}
+              onClick={handleCopy}
+              title="Copiar API Key"
+            >
+              {copied ? <FaCheckCircle /> : <FaCopy />}
+              {copied ? 'Copiado!' : 'Copiar'}
+            </button>
+          </div>
+
+          <div className="token-info">
+            <FaInfoCircle />
+            <span>
+              Esta API Key é permanente e não expira. Use-a em suas integrações externas.
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="card examples-card">
-        <h3><FaCode /> Exemplos de Uso</h3>
+      {!loading && !error && (
+        <div className="card examples-card">
+          <h3><FaCode /> Exemplos de Uso</h3>
 
-        <div className="example-section">
-          <h4>JavaScript (Fetch API)</h4>
-          <pre className="code-block">
+          <div className="example-section">
+            <h4>JavaScript (Fetch API)</h4>
+            <pre className="code-block">
 {`fetch('${apiUrl}/pacientes', {
   method: 'GET',
   headers: {
-    'Authorization': 'ApiKey ${apiKey?.key}',
+    'Authorization': 'Bearer ${apiKey}',
     'Content-Type': 'application/json'
   }
 })
 .then(response => response.json())
 .then(data => console.log(data))
 .catch(error => console.error('Erro:', error));`}
-          </pre>
-        </div>
+            </pre>
+          </div>
 
-        <div className="example-section">
-          <h4>JavaScript (Axios)</h4>
-          <pre className="code-block">
+          <div className="example-section">
+            <h4>JavaScript (Axios)</h4>
+            <pre className="code-block">
 {`import axios from 'axios';
 
 axios.get('${apiUrl}/pacientes', {
   headers: {
-    'Authorization': 'ApiKey ${apiKey?.key}'
+    'Authorization': 'Bearer ${apiKey}'
   }
 })
 .then(response => console.log(response.data))
 .catch(error => console.error('Erro:', error));`}
-          </pre>
-        </div>
+            </pre>
+          </div>
 
-        <div className="example-section">
-          <h4>cURL</h4>
-          <pre className="code-block curl-block">
+          <div className="example-section">
+            <h4>cURL</h4>
+            <pre className="code-block curl-block">
 {`curl -X GET "${apiUrl}/pacientes" \\
-  -H "Authorization: ApiKey ${apiKey?.key}" \\
+  -H "Authorization: Bearer ${apiKey}" \\
   -H "Content-Type: application/json"`}
-          </pre>
-        </div>
+            </pre>
+          </div>
 
-        <div className="example-section">
-          <h4>Python (Requests)</h4>
-          <pre className="code-block">
+          <div className="example-section">
+            <h4>Python (Requests)</h4>
+            <pre className="code-block">
 {`import requests
 
 headers = {
-    'Authorization': 'ApiKey ${apiKey?.key}',
+    'Authorization': 'Bearer ${apiKey}',
     'Content-Type': 'application/json'
 }
 
 response = requests.get('${apiUrl}/pacientes', headers=headers)
 print(response.json())`}
-          </pre>
-        </div>
+            </pre>
+          </div>
 
-        <div className="example-section">
-          <h4>Criar Novo Paciente (POST)</h4>
-          <pre className="code-block">
+          <div className="example-section">
+            <h4>Criar Novo Paciente (POST)</h4>
+            <pre className="code-block">
 {`fetch('${apiUrl}/pacientes', {
   method: 'POST',
   headers: {
-    'Authorization': 'ApiKey ${apiKey?.key}',
+    'Authorization': 'Bearer ${apiKey}',
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
@@ -180,30 +203,65 @@ print(response.json())`}
 })
 .then(response => response.json())
 .then(data => console.log(data));`}
-          </pre>
+            </pre>
+          </div>
+
+          <div className="example-section">
+            <h4>Agendar Consulta (POST)</h4>
+            <pre className="code-block">
+{`fetch('${apiUrl}/agenda', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ${apiKey}',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    paciente_id: 1,
+    medico_id: 1,
+    data_consulta: '2025-11-15',
+    horario: '14:00',
+    observacoes: 'Primeira consulta'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));`}
+            </pre>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="card info-card">
         <h3>Informações Importantes</h3>
         <ul>
           <li>
-            <strong>Permanente:</strong> Esta API Key nunca expira e não muda quando você faz login/logout
+            <strong>Permanente:</strong> Esta API Key nunca expira e não muda quando você faz login/logout no sistema
           </li>
           <li>
-            <strong>Formato:</strong> Use "Authorization: ApiKey {'{sua-chave}'}" no header da requisição
+            <strong>Formato:</strong> Use <code>Authorization: Bearer {'{sua-chave}'}</code> no header da requisição
           </li>
           <li>
-            <strong>Diferença do JWT:</strong> O token JWT do login é para uso no frontend e expira. Esta API Key é para integrações externas e nunca expira.
+            <strong>Compatível:</strong> Esta API Key fixa funciona com o formato Bearer padrão, igual aos exemplos da API Docs
           </li>
           <li>
-            <strong>Segurança:</strong> Nunca compartilhe esta chave em repositórios públicos ou logs
+            <strong>Segurança:</strong> Nunca compartilhe esta chave em repositórios públicos, logs ou código frontend público
           </li>
           <li>
-            <strong>Endpoints:</strong> Todos os endpoints (exceto /api/auth/login) aceitam autenticação via API Key
+            <strong>Uso:</strong> Ideal para integrações com sistemas externos, automações, scripts Python, aplicativos mobile, etc.
           </li>
           <li>
-            <strong>Documentação:</strong> Consulte a página "API Docs" para lista completa de endpoints disponíveis
+            <strong>Endpoints Disponíveis:</strong>
+            <ul className="nested-list">
+              <li>GET /api/pacientes - Listar pacientes</li>
+              <li>POST /api/pacientes - Criar paciente</li>
+              <li>GET /api/medicos - Listar médicos</li>
+              <li>POST /api/medicos - Criar médico</li>
+              <li>GET /api/agenda - Listar consultas</li>
+              <li>POST /api/agenda - Agendar consulta</li>
+              <li>GET /api/agenda/horarios-livres - Horários disponíveis</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Documentação Completa:</strong> Consulte a página "API Docs" para detalhes de todos os endpoints
           </li>
         </ul>
       </div>

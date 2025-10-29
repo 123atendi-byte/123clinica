@@ -10,6 +10,61 @@
   font-size: 1rem;
 }
 
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading-state p,
+.error-state p {
+  margin: 15px 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.spin-icon {
+  font-size: 32px;
+  color: #4CAF50;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-card {
+  border-left: 4px solid #f44336;
+}
+
+.error-state {
+  color: #f44336;
+}
+
+.btn-retry {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.btn-retry:hover {
+  background-color: #45a049;
+}
+
 .warning-card {
   display: flex;
   flex-direction: column;
@@ -77,6 +132,10 @@
   margin-top: 0.25rem;
 }
 
+.token-header-content {
+  flex: 1;
+}
+
 .token-header h3 {
   margin: 0 0 0.25rem 0;
   color: #111827;
@@ -86,6 +145,35 @@
   color: #6b7280;
   margin: 0;
   font-size: 0.9rem;
+}
+
+.btn-generate {
+  padding: 8px 16px;
+  background-color: #f97316;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.btn-generate:hover:not(:disabled) {
+  background-color: #ea580c;
+  transform: translateY(-1px);
+}
+
+.btn-generate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spin-icon-small {
+  animation: spin 1s linear infinite;
 }
 
 .token-box {
@@ -239,6 +327,28 @@
 .info-card li strong {
   color: #22c55e;
   margin-right: 0.5rem;
+}
+
+.info-card code {
+  background: #e5e7eb;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.nested-list {
+  list-style: disc;
+  margin-top: 0.5rem;
+  margin-left: 1.5rem;
+}
+
+.nested-list li {
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 768px) {

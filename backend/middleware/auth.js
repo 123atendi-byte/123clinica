@@ -34,18 +34,41 @@ const verifyToken = (req, res, next) => {
       }
     );
   }
-  // Verificar se é JWT (começa com "Bearer ")
+  // Verificar se é JWT ou API Key fixa (começa com "Bearer ")
   else if (authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
 
-    try {
-      // Verificar e decodificar token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded; // Adiciona dados do usuário na requisição
-      req.authMethod = 'jwt';
-      next();
-    } catch (error) {
-      return res.status(403).json({ error: 'Token inválido ou expirado.' });
+    // Primeiro, verificar se é uma API Key fixa (começa com "clinica_")
+    if (token.startsWith('clinica_')) {
+      db.get(
+        'SELECT * FROM api_keys WHERE key = ? AND ativo = 1',
+        [token],
+        (err, key) => {
+          if (err) {
+            return res.status(500).json({ error: 'Erro ao validar API Key.' });
+          }
+
+          if (!key) {
+            return res.status(403).json({ error: 'API Key inválida ou inativa.' });
+          }
+
+          // API Key válida - adicionar info na requisição
+          req.apiKey = key;
+          req.authMethod = 'apikey';
+          next();
+        }
+      );
+    } else {
+      // É um token JWT
+      try {
+        // Verificar e decodificar token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Adiciona dados do usuário na requisição
+        req.authMethod = 'jwt';
+        next();
+      } catch (error) {
+        return res.status(403).json({ error: 'Token inválido ou expirado.' });
+      }
     }
   }
   else {

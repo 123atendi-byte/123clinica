@@ -122,10 +122,43 @@ router.get('/api-key', (req, res) => {
         key: apiKey.key,
         nome: apiKey.nome,
         descricao: apiKey.descricao,
-        usage: `Authorization: ApiKey ${apiKey.key}`
+        usage: `Authorization: Bearer ${apiKey.key}`
       });
     }
   );
+});
+
+// POST /api/auth/generate-api-key - Gera uma nova API Key
+router.post('/generate-api-key', (req, res) => {
+  // Gerar nova chave aleatória
+  const crypto = require('crypto');
+  const newKey = `clinica_${crypto.randomBytes(16).toString('hex')}_${Date.now()}`;
+
+  // Desativar todas as chaves antigas
+  db.run('UPDATE api_keys SET ativo = 0', (err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Erro ao desativar chaves antigas' });
+    }
+
+    // Inserir nova chave
+    db.run(
+      'INSERT INTO api_keys (key, nome, descricao, ativo) VALUES (?, ?, ?, ?)',
+      [newKey, 'API Key Principal', 'Chave fixa para integração via API', 1],
+      function(err) {
+        if (err) {
+          return res.status(500).json({ error: 'Erro ao gerar nova API Key' });
+        }
+
+        res.json({
+          message: 'Nova API Key gerada com sucesso',
+          key: newKey,
+          nome: 'API Key Principal',
+          descricao: 'Chave fixa para integração via API',
+          usage: `Authorization: Bearer ${newKey}`
+        });
+      }
+    );
+  });
 });
 
 module.exports = router;
