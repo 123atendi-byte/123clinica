@@ -21,6 +21,7 @@ const Agenda = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showBloqueioModal, setShowBloqueioModal] = useState(false);
   const [showAgendamentoModal, setShowAgendamentoModal] = useState(false);
+  const [showAgendamentoForm, setShowAgendamentoForm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [editingConsulta, setEditingConsulta] = useState(null);
   const [pacientes, setPacientes] = useState([]);
@@ -298,6 +299,7 @@ const Agenda = () => {
         observacoes: novoAgendamento.observacoes
       });
 
+      setShowAgendamentoForm(false);
       setShowAgendamentoModal(false);
       setNovoAgendamento({ paciente_id: '', observacoes: '' });
 
@@ -1055,8 +1057,78 @@ const Agenda = () => {
         <div className="modal-overlay" onClick={() => setShowAgendamentoModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2><FaCalendarAlt /> Novo Agendamento</h2>
+              <h2><FaCalendarAlt /> Gerenciar Horário</h2>
               <button className="modal-close" onClick={() => setShowAgendamentoModal(false)}>×</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="detail-group">
+                <strong>Data:</strong>
+                <span>{new Date(selectedSlot.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+              </div>
+              <div className="detail-group">
+                <strong>Horário:</strong>
+                <span>{selectedSlot.horario}</span>
+              </div>
+              <div className="detail-group">
+                <strong>Médico:</strong>
+                <span>Dr(a). {medicoSelecionado?.nome}</span>
+              </div>
+
+              <div className="action-choice">
+                <p className="choice-label">O que você deseja fazer neste horário?</p>
+                <div className="action-buttons">
+                  <button
+                    type="button"
+                    className="btn-action btn-action-agendar"
+                    onClick={() => {
+                      setShowAgendamentoModal(false);
+                      setShowAgendamentoForm(true);
+                    }}
+                  >
+                    <FaCalendarAlt size={24} />
+                    <span>Agendar Consulta</span>
+                    <small>Marcar consulta com paciente</small>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-action btn-action-bloquear"
+                    onClick={() => {
+                      setShowAgendamentoModal(false);
+                      setBloqueioData({
+                        data_inicio: selectedSlot.date,
+                        data_fim: selectedSlot.date,
+                        horario_inicio: selectedSlot.horario,
+                        horario_fim: selectedSlot.horario,
+                        motivo: '',
+                        tipo: 'horario'
+                      });
+                      setShowBloqueioModal(true);
+                    }}
+                  >
+                    <FaLock size={24} />
+                    <span>Bloquear Horário</span>
+                    <small>Impedir agendamentos neste horário</small>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowAgendamentoModal(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAgendamentoForm && selectedSlot && (
+        <div className="modal-overlay" onClick={() => setShowAgendamentoForm(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><FaCalendarAlt /> Novo Agendamento</h2>
+              <button className="modal-close" onClick={() => setShowAgendamentoForm(false)}>×</button>
             </div>
             <form onSubmit={handleCriarAgendamento}>
               <div className="modal-body">
@@ -1103,7 +1175,7 @@ const Agenda = () => {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowAgendamentoModal(false)}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowAgendamentoForm(false)}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary">

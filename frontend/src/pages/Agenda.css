@@ -25,6 +25,90 @@
   gap: 0.5rem;
 }
 
+/* Action Choice Modal */
+.action-choice {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+.choice-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.btn-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.btn-action small {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: normal;
+}
+
+.btn-action-agendar {
+  border-color: #22c55e;
+}
+
+.btn-action-agendar:hover {
+  background: #f0fdf4;
+  border-color: #16a34a;
+}
+
+.btn-action-agendar svg {
+  color: #22c55e;
+}
+
+.btn-action-bloquear {
+  border-color: #ef4444;
+}
+
+.btn-action-bloquear:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.btn-action-bloquear svg {
+  color: #ef4444;
+}
+
+@media (max-width: 600px) {
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
 .agenda-filters {
   margin-bottom: 2rem;
 }
