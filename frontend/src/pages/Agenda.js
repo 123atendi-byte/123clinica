@@ -542,35 +542,39 @@ const Agenda = () => {
     return horarios;
   };
 
-  // Retorna apenas os horários que têm agendamentos ou estão disponíveis na semana
+  // Retorna TODOS os horários da agenda do médico (baseado na configuração de agenda)
   const getHorariosVisiveis = () => {
     const allHorarios = getHorariosPadrao();
-    const horariosComConteudo = new Set();
+    const horariosComAgenda = new Set();
 
-    // Adiciona horários que têm consultas
-    consultasSemana.forEach(consulta => {
-      horariosComConteudo.add(consulta.horario);
-    });
-
-    // Adiciona horários livres de cada dia
+    // Para cada dia da semana, adiciona os horários da agenda configurada
     getDaysOfWeek().forEach(day => {
       const dateStr = formatDate(day);
       const horariosInfo = horariosLivresSemana[dateStr];
-      if (horariosInfo?.horarios_livres) {
-        horariosInfo.horarios_livres.forEach(h => horariosComConteudo.add(h));
+
+      // Se tem agenda configurada (horários_livres existe), adiciona TODOS os possíveis horários
+      // Isso inclui horários livres + horários ocupados (consultas serão mostradas sobre eles)
+      if (horariosInfo && !horariosInfo.mensagem) {
+        // Adiciona todos os horários do dia baseado na agenda
+        allHorarios.forEach(h => horariosComAgenda.add(h));
       }
     });
 
-    // Se não houver nenhum horário com conteúdo, mostra os horários padrão de trabalho
-    if (horariosComConteudo.size === 0) {
+    // Também adiciona horários que têm consultas (para garantir que apareçam)
+    consultasSemana.forEach(consulta => {
+      horariosComAgenda.add(consulta.horario);
+    });
+
+    // Se não houver nenhum horário, mostra horários padrão de trabalho
+    if (horariosComAgenda.size === 0) {
       return allHorarios.filter(h => {
         const hora = parseInt(h.split(':')[0]);
         return hora >= 8 && hora <= 18;
       });
     }
 
-    // Retorna apenas horários que têm conteúdo, ordenados
-    return allHorarios.filter(h => horariosComConteudo.has(h));
+    // Retorna todos os horários que fazem parte da agenda
+    return allHorarios.filter(h => horariosComAgenda.has(h));
   };
 
   const medicoSelecionado = medicos.find(m => m.id === selectedMedico);
@@ -721,6 +725,11 @@ const Agenda = () => {
                 const consultasDia = getConsultasPorDia(day);
                 const horariosInfo = horariosLivresSemana[dateStr];
 
+                // Verificar se há bloqueios neste dia
+                const bloqueiosNesteDia = bloqueiosSemana.filter(b =>
+                  dateStr >= b.data_inicio && dateStr <= b.data_fim
+                );
+
                 return (
                   <div key={index} className={`day-header-modern ${isToday ? 'today' : ''}`}>
                     <div className="day-name-modern">{getDayName(day)}, {new Date(day).getDate()}/{new Date(day).getMonth() + 1}/{new Date(day).getFullYear()}</div>
@@ -728,7 +737,30 @@ const Agenda = () => {
                       {horariosInfo?.mensagem ? (
                         <span className="status-sem-agenda">Sem agenda</span>
                       ) : (
-                        <span className="status-disponivel">{consultasDia.length} consulta{consultasDia.length !== 1 ? 's' : ''}</span>
+                        <>
+                          <span className="status-disponivel">{consultasDia.length} consulta{consultasDia.length !== 1 ? 's' : ''}</span>
+                          {bloqueiosNesteDia.length > 0 && (
+                            <div className="bloqueios-dia-info">
+                              {bloqueiosNesteDia.map(bloq => (
+                                <div
+                                  key={bloq.id}
+                                  className="bloqueio-badge"
+                                  title={`Bloqueio: ${bloq.motivo || 'Sem motivo'}\n${bloq.horario_inicio ? `${bloq.horario_inicio} - ${bloq.horario_fim}` : 'Dia inteiro'}\nClique para remover`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoverBloqueio(bloq.id, bloq.motivo);
+                                  }}
+                                >
+                                  <FaLock size={8} />
+                                  <span className="bloqueio-badge-text">
+                                    {bloq.horario_inicio ? `${bloq.horario_inicio.substring(0,5)}-${bloq.horario_fim.substring(0,5)}` : 'Dia'}
+                                  </span>
+                                  <span className="bloqueio-badge-remove">✕</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
