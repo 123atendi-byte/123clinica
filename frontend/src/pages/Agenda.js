@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { agendaService, medicosService, bloqueiosService } from '../services/api';
-import { FaCalendarAlt, FaEdit, FaTrash, FaClock, FaUser, FaFilter, FaChevronLeft, FaChevronRight, FaCalendarWeek, FaBan, FaLock, FaUnlock, FaCalendar } from 'react-icons/fa';
+import { agendaService, medicosService, bloqueiosService, pacientesService } from '../services/api';
+import { FaCalendarAlt, FaEdit, FaTrash, FaClock, FaUser, FaChevronLeft, FaChevronRight, FaCalendarWeek, FaBan, FaLock, FaCalendar } from 'react-icons/fa';
 import './Agenda.css';
 import './AgendaBloqueios.css';
 
@@ -15,11 +15,19 @@ const Agenda = () => {
   const [consultas, setConsultas] = useState([]);
   const [horariosLivres, setHorariosLivres] = useState([]);
   const [horariosLivresSemana, setHorariosLivresSemana] = useState({});
+  // eslint-disable-next-line no-unused-vars
   const [bloqueiosSemana, setBloqueiosSemana] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showBloqueioModal, setShowBloqueioModal] = useState(false);
+  const [showAgendamentoModal, setShowAgendamentoModal] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [editingConsulta, setEditingConsulta] = useState(null);
+  const [pacientes, setPacientes] = useState([]);
+  const [novoAgendamento, setNovoAgendamento] = useState({
+    paciente_id: '',
+    observacoes: ''
+  });
   const [bloqueioData, setBloqueioData] = useState({
     data_inicio: '',
     data_fim: '',
@@ -31,6 +39,7 @@ const Agenda = () => {
 
   useEffect(() => {
     loadMedicos();
+    loadPacientes();
   }, []);
 
   useEffect(() => {
@@ -88,6 +97,17 @@ const Agenda = () => {
     } catch (error) {
       console.error('Erro ao carregar médicos:', error);
       setMedicos([]);
+    }
+  };
+
+  const loadPacientes = async () => {
+    try {
+      const response = await pacientesService.getAll();
+      const data = Array.isArray(response.data) ? response.data : [];
+      setPacientes(data);
+    } catch (error) {
+      console.error('Erro ao carregar pacientes:', error);
+      setPacientes([]);
     }
   };
 
@@ -170,11 +190,46 @@ const Agenda = () => {
         data_inicio: dataInicio,
         data_fim: dataFim
       });
-      setBloqueiosSemana(response.data);
+      const bloqueios = Array.isArray(response.data) ? response.data : [];
+      setBloqueiosSemana(bloqueios);
     } catch (error) {
       console.error('Erro ao carregar bloqueios:', error);
       setBloqueiosSemana([]);
     }
+  };
+
+  // Verifica se um horário específico está bloqueado
+  const isHorarioBloqueado = (dateStr, horario) => {
+    return bloqueiosSemana.some(bloqueio => {
+      const dentroData = dateStr >= bloqueio.data_inicio && dateStr <= bloqueio.data_fim;
+
+      if (!dentroData) return false;
+
+      // Se não tem horário específico, bloqueia o dia inteiro
+      if (!bloqueio.horario_inicio || !bloqueio.horario_fim) {
+        return true;
+      }
+
+      // Se tem horário específico, verifica se o horário está no intervalo
+      return horario >= bloqueio.horario_inicio && horario <= bloqueio.horario_fim;
+    });
+  };
+
+  // Busca bloqueio em um horário específico
+  const getBloqueioNoHorario = (dateStr, horario) => {
+    return bloqueiosSemana.find(bloqueio => {
+      const dentroData = dateStr >= bloqueio.data_inicio && dateStr <= bloqueio.data_fim;
+
+      if (!dentroData) return false;
+
+      // Se não tem horário específico, bloqueia o dia inteiro
+      if (!bloqueio.horario_inicio || !bloqueio.horario_fim) {
+        return true;
+      }
+
+      // Se tem horário específico, verifica se o horário está no intervalo
+      return horario >= bloqueio.horario_inicio && horario <= bloqueio.horario_fim;
+    });
   };
 
   const loadAgendaMes = async () => {
@@ -211,6 +266,52 @@ const Agenda = () => {
   const handleEdit = (consulta) => {
     setEditingConsulta(consulta);
     setShowEditModal(true);
+  };
+
+  const handleSlotClick = (date, horario, consulta = null) => {
+    setSelectedSlot({ date, horario, consulta });
+    if (consulta) {
+      setEditingConsulta(consulta);
+      setShowEditModal(true);
+    } else {
+      setNovoAgendamento({
+        paciente_id: '',
+        observacoes: ''
+      });
+      setShowAgendamentoModal(true);
+    }
+  };
+
+  const handleCriarAgendamento = async (e) => {
+    e.preventDefault();
+    if (!novoAgendamento.paciente_id) {
+      alert('Por favor, selecione um paciente');
+      return;
+    }
+
+    try {
+      await agendaService.agendar({
+        medico_id: selectedMedico,
+        paciente_id: novoAgendamento.paciente_id,
+        data_consulta: selectedSlot.date,
+        horario: selectedSlot.horario,
+        observacoes: novoAgendamento.observacoes
+      });
+
+      setShowAgendamentoModal(false);
+      setNovoAgendamento({ paciente_id: '', observacoes: '' });
+
+      // Recarrega a agenda
+      if (viewMode === 'week') {
+        loadAgendaSemana();
+        loadHorariosLivresSemana();
+      } else {
+        loadAgendaDia();
+        loadHorariosLivres();
+      }
+    } catch (error) {
+      alert(error.response?.data?.error || 'Erro ao criar agendamento');
+    }
   };
 
   const handleCancelar = async (id) => {
@@ -263,10 +364,11 @@ const Agenda = () => {
     }
   };
 
-  const handleCriarBloqueio = (dateStr) => {
+  const handleCriarBloqueio = (dateStr = null) => {
+    const dataInicial = dateStr || formatDate(weekStart);
     setBloqueioData({
-      data_inicio: dateStr,
-      data_fim: dateStr,
+      data_inicio: dataInicial,
+      data_fim: dataInicial,
       horario_inicio: '',
       horario_fim: '',
       motivo: '',
@@ -301,16 +403,13 @@ const Agenda = () => {
     }
   };
 
-  const handleRemoverBloqueio = async (dateStr) => {
-    const bloqueio = bloqueiosSemana.find(b =>
-      dateStr >= b.data_inicio && dateStr <= b.data_fim
-    );
-
-    if (bloqueio && window.confirm(`Tem certeza que deseja remover o bloqueio: ${bloqueio.motivo || 'Sem motivo'}?`)) {
+  const handleRemoverBloqueio = async (bloqueioId, bloqueioDescricao) => {
+    if (window.confirm(`Tem certeza que deseja remover o bloqueio: ${bloqueioDescricao || 'Sem motivo'}?`)) {
       try {
-        await bloqueiosService.delete(bloqueio.id);
+        await bloqueiosService.delete(bloqueioId);
         loadBloqueiosSemana();
         loadHorariosLivresSemana();
+        loadAgendaSemana();
       } catch (error) {
         alert('Erro ao remover bloqueio');
       }
@@ -406,75 +505,126 @@ const Agenda = () => {
   };
 
   const getDayName = (date) => {
-    const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    const days = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
     return days[new Date(date).getDay()];
   };
 
-  const medicoSelecionado = medicos.find(m => m.id == selectedMedico);
+  // Função para gerar avatar com inicial do nome
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const names = name.split(' ');
+    if (names.length === 1) return names[0].substring(0, 2).toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  };
+
+  // Cores de avatar baseadas em hash do nome
+  const getAvatarColor = (name) => {
+    const colors = [
+      '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+      '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  // Horários padrão (podem ser personalizados)
+  const getHorariosPadrao = () => {
+    const horarios = [];
+    for (let h = 8; h <= 18; h++) {
+      horarios.push(`${h.toString().padStart(2, '0')}:00`);
+      if (h < 18) {
+        horarios.push(`${h.toString().padStart(2, '0')}:30`);
+      }
+    }
+    return horarios;
+  };
+
+  // Retorna apenas os horários que têm agendamentos ou estão disponíveis na semana
+  const getHorariosVisiveis = () => {
+    const allHorarios = getHorariosPadrao();
+    const horariosComConteudo = new Set();
+
+    // Adiciona horários que têm consultas
+    consultasSemana.forEach(consulta => {
+      horariosComConteudo.add(consulta.horario);
+    });
+
+    // Adiciona horários livres de cada dia
+    getDaysOfWeek().forEach(day => {
+      const dateStr = formatDate(day);
+      const horariosInfo = horariosLivresSemana[dateStr];
+      if (horariosInfo?.horarios_livres) {
+        horariosInfo.horarios_livres.forEach(h => horariosComConteudo.add(h));
+      }
+    });
+
+    // Se não houver nenhum horário com conteúdo, mostra os horários padrão de trabalho
+    if (horariosComConteudo.size === 0) {
+      return allHorarios.filter(h => {
+        const hora = parseInt(h.split(':')[0]);
+        return hora >= 8 && hora <= 18;
+      });
+    }
+
+    // Retorna apenas horários que têm conteúdo, ordenados
+    return allHorarios.filter(h => horariosComConteudo.has(h));
+  };
+
+  const medicoSelecionado = medicos.find(m => m.id === selectedMedico);
 
   return (
     <div className="agenda">
-      <div className="page-header">
+      <div className="page-header-compact">
         <h1><FaCalendarAlt /> Agenda de Consultas</h1>
-        <div className="view-toggle">
-          <button
-            className={`btn ${viewMode === 'day' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setViewMode('day')}
-          >
-            <FaCalendarAlt /> Dia
-          </button>
-          <button
-            className={`btn ${viewMode === 'week' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setViewMode('week')}
-          >
-            <FaCalendarWeek /> Semana
-          </button>
-          <button
-            className={`btn ${viewMode === 'month' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setViewMode('month')}
-          >
-            <FaCalendar /> Mês
-          </button>
-        </div>
-      </div>
-
-      <div className="agenda-filters">
-        <div className="card">
-          <h3><FaFilter /> Filtros</h3>
-          <div className="filters-grid">
-            <div className="form-group">
-              <label className="label">Médico</label>
-              <select
-                className="input"
-                value={selectedMedico}
-                onChange={(e) => setSelectedMedico(e.target.value)}
-              >
-                {medicos.map((medico) => (
-                  <option key={medico.id} value={medico.id}>
-                    Dr(a). {medico.nome} - {medico.especialidade}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {viewMode === 'day' && (
-              <div className="form-group">
-                <label className="label">Data</label>
-                <input
-                  type="date"
-                  className="input"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                />
-              </div>
-            )}
+        <div className="header-controls">
+          <div className="view-toggle">
+            <button
+              className={`btn ${viewMode === 'day' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setViewMode('day')}
+            >
+              <FaCalendarAlt /> Dia
+            </button>
+            <button
+              className={`btn ${viewMode === 'week' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setViewMode('week')}
+            >
+              <FaCalendarWeek /> Semana
+            </button>
+            <button
+              className={`btn ${viewMode === 'month' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setViewMode('month')}
+            >
+              <FaCalendar /> Mês
+            </button>
           </div>
 
-          {medicoSelecionado && (
-            <div className="medico-info">
-              <strong>Dr(a). {medicoSelecionado.nome}</strong>
-              <span>{medicoSelecionado.especialidade}</span>
-              <span>CRM: {medicoSelecionado.crm}</span>
+          <div className="medico-filter-compact">
+            <label className="filter-label"><FaUser /> Médico:</label>
+            <select
+              className="input-compact"
+              value={selectedMedico}
+              onChange={(e) => setSelectedMedico(e.target.value)}
+            >
+              {medicos.map((medico) => (
+                <option key={medico.id} value={medico.id}>
+                  Dr(a). {medico.nome} - {medico.especialidade}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {viewMode === 'day' && (
+            <div className="date-filter-compact">
+              <label className="filter-label">Data:</label>
+              <input
+                type="date"
+                className="input-compact"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
             </div>
           )}
         </div>
@@ -506,7 +656,6 @@ const Agenda = () => {
             {getDaysInMonth().map((day, index) => {
               const consultasDia = getConsultasPorDia(day.date);
               const isToday = formatDate(day.date) === formatDate(new Date());
-              const dateStr = formatDate(day.date);
 
               return (
                 <div
@@ -537,146 +686,161 @@ const Agenda = () => {
           </div>
         </div>
       ) : viewMode === 'week' ? (
-        <div className="week-view">
-          <div className="week-navigation">
-            <button className="btn btn-secondary" onClick={handlePreviousWeek}>
-              <FaChevronLeft /> Semana Anterior
-            </button>
-            <button className="btn btn-secondary" onClick={handleToday}>
-              Hoje
-            </button>
-            <button className="btn btn-secondary" onClick={handleNextWeek}>
-              Próxima Semana <FaChevronRight />
-            </button>
+        <div className="week-view-modern">
+          <div className="week-header-modern">
+            <div className="week-title-modern">
+              <h2>Agenda Semanal</h2>
+              <span className="week-range">
+                {getDaysOfWeek()[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} a {' '}
+                {getDaysOfWeek()[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+              </span>
+            </div>
+            <div className="week-navigation-modern">
+              <button className="btn btn-icon" onClick={handlePreviousWeek} title="Semana anterior">
+                <FaChevronLeft />
+              </button>
+              <button className="btn btn-secondary" onClick={handleToday}>
+                Hoje
+              </button>
+              <button className="btn btn-icon" onClick={handleNextWeek} title="Próxima semana">
+                <FaChevronRight />
+              </button>
+              <button className="btn btn-primary" onClick={() => handleCriarBloqueio()} title="Adicionar bloqueio">
+                <FaLock /> Bloqueio
+              </button>
+            </div>
           </div>
 
-          <div className="week-grid">
-            {getDaysOfWeek().map((day, index) => {
-              const consultasDia = getConsultasPorDia(day);
-              const isToday = formatDate(day) === formatDate(new Date());
+          <div className="week-grid-modern">
+            {/* Cabeçalho com os dias da semana */}
+            <div className="week-days-header">
+              <div className="time-column-header"></div>
+              {getDaysOfWeek().map((day, index) => {
+                const isToday = formatDate(day) === formatDate(new Date());
+                const dateStr = formatDate(day);
+                const consultasDia = getConsultasPorDia(day);
+                const horariosInfo = horariosLivresSemana[dateStr];
 
-              return (
-                <div key={index} className={`day-column ${isToday ? 'today' : ''}`}>
-                  <div className="day-header">
-                    <div className="day-name">{getDayName(day)}</div>
-                    <div className="day-date">
-                      {new Date(day).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                return (
+                  <div key={index} className={`day-header-modern ${isToday ? 'today' : ''}`}>
+                    <div className="day-name-modern">{getDayName(day)}, {new Date(day).getDate()}/{new Date(day).getMonth() + 1}/{new Date(day).getFullYear()}</div>
+                    <div className="day-subtitle-modern">
+                      {horariosInfo?.mensagem ? (
+                        <span className="status-sem-agenda">Sem agenda</span>
+                      ) : (
+                        <span className="status-disponivel">{consultasDia.length} consulta{consultasDia.length !== 1 ? 's' : ''}</span>
+                      )}
                     </div>
-                    {consultasDia.length > 0 && (
-                      <div className="day-count">{consultasDia.length} consulta{consultasDia.length > 1 ? 's' : ''}</div>
-                    )}
                   </div>
+                );
+              })}
+            </div>
 
-                  <div className="day-consultas">
-                    {(() => {
-                      const dateStr = formatDate(day);
-                      const horariosInfo = horariosLivresSemana[dateStr];
+            {/* Grade de horários */}
+            <div className="week-schedule-grid">
+              {getHorariosVisiveis().map((horario) => (
+                <div key={horario} className="time-row">
+                  <div className="time-label">{horario}</div>
+                  {getDaysOfWeek().map((day, dayIndex) => {
+                    const dateStr = formatDate(day);
+                    const horariosInfo = horariosLivresSemana[dateStr];
+                    const consultasNoHorario = getConsultasPorDia(day).filter(c => c.horario === horario);
+                    const isToday = formatDate(day) === formatDate(new Date());
 
-                      // Verificar se está bloqueado
-                      if (horariosInfo?.bloqueado) {
-                        return (
-                          <div className="bloqueio-indicator">
-                            <FaLock size={24} />
-                            <div style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>Bloqueado</div>
-                            <small>{horariosInfo.motivo}</small>
-                            <button
-                              className="btn-remover-bloqueio"
-                              onClick={() => handleRemoverBloqueio(dateStr)}
+                    const bloqueadoEsteHorario = isHorarioBloqueado(dateStr, horario);
+                    const bloqueioNeste = getBloqueioNoHorario(dateStr, horario);
+
+                    return (
+                      <div
+                        key={`${dateStr}-${horario}`}
+                        className={`time-slot ${isToday ? 'today' : ''}`}
+                        onClick={() => {
+                          if (!bloqueadoEsteHorario && !horariosInfo?.mensagem) {
+                            if (consultasNoHorario.length > 0) {
+                              handleSlotClick(dateStr, horario, consultasNoHorario[0]);
+                            } else if (horariosInfo?.horarios_livres?.includes(horario)) {
+                              handleSlotClick(dateStr, horario);
+                            }
+                          }
+                        }}
+                      >
+                        {/* PRIORIDADE 1: Consultas marcadas sempre aparecem */}
+                        {consultasNoHorario.length > 0 ? (
+                          consultasNoHorario.map((consulta) => (
+                            <div
+                              key={consulta.id}
+                              className={`consulta-slot ${consulta.status}`}
+                              title={`${consulta.paciente.nome} - ${getStatusLabel(consulta.status)}`}
                             >
-                              <FaUnlock /> Desbloquear
-                            </button>
-                          </div>
-                        );
-                      }
-
-                      // Verificar se não tem agenda configurada
-                      if (horariosInfo?.mensagem) {
-                        return (
-                          <div className="no-agenda">
-                            <FaBan size={20} />
-                            <div>Sem agenda</div>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <>
-                          {/* Consultas agendadas */}
-                          {consultasDia.map((consulta) => (
-                            <div key={consulta.id} className="consulta-card-mini">
-                              <div className="consulta-time-mini">{consulta.horario}</div>
-                              <div className="consulta-patient-mini">{consulta.paciente.nome}</div>
                               <div
-                                className="consulta-status-mini"
-                                style={{ backgroundColor: getStatusColor(consulta.status) }}
+                                className="consulta-avatar"
+                                style={{ backgroundColor: getAvatarColor(consulta.paciente.nome) }}
                               >
-                                {getStatusLabel(consulta.status)}
+                                {getInitials(consulta.paciente.nome)}
                               </div>
-                              <div className="consulta-actions-mini">
-                                <button
-                                  className="btn-icon-mini btn-edit"
-                                  onClick={() => handleEdit(consulta)}
-                                  title="Editar"
-                                >
-                                  <FaEdit />
-                                </button>
-                                {consulta.status !== 'cancelada' && (
-                                  <button
-                                    className="btn-icon-mini btn-cancel"
-                                    onClick={() => handleCancelar(consulta.id)}
-                                    title="Cancelar"
-                                    style={{ color: '#f59e0b' }}
-                                  >
-                                    <FaBan />
-                                  </button>
-                                )}
-                                <button
-                                  className="btn-icon-mini btn-delete"
-                                  onClick={() => handleDelete(consulta.id)}
-                                  title="Deletar permanentemente"
-                                >
-                                  <FaTrash />
-                                </button>
+                              <div className="consulta-info-slot">
+                                <div className="consulta-name">{consulta.paciente.nome}</div>
+                                <div className="consulta-details">
+                                  {consulta.status === 'cancelada' && <FaBan size={10} />}
+                                  {consulta.observacoes && <span title={consulta.observacoes}>📝</span>}
+                                </div>
                               </div>
                             </div>
-                          ))}
-
-                          {/* Horários livres */}
-                          {horariosInfo?.horarios_livres && horariosInfo.horarios_livres.length > 0 && (
-                            <div className="horarios-livres-container">
-                              <div className="horarios-livres-title">
-                                <FaClock size={12} /> Horários vagos ({horariosInfo.horarios_livres.length})
-                              </div>
-                              <div className="horarios-livres-list">
-                                {horariosInfo.horarios_livres.slice(0, 4).map(horario => (
-                                  <div key={horario} className="horario-livre-item">
-                                    {horario}
-                                  </div>
-                                ))}
-                                {horariosInfo.horarios_livres.length > 4 && (
-                                  <small className="mais-horarios">
-                                    +{horariosInfo.horarios_livres.length - 4} mais
-                                  </small>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Botão para bloquear dia */}
-                          <button
-                            className="btn-bloquear-dia"
-                            onClick={() => handleCriarBloqueio(dateStr)}
-                            title="Bloquear este dia"
+                          ))
+                        ) : bloqueadoEsteHorario ? (
+                          /* PRIORIDADE 2: Horários bloqueados (sem consulta) */
+                          <div
+                            className="slot-bloqueado"
+                            title={`Bloqueado: ${bloqueioNeste?.motivo || 'Sem motivo'} - Clique para remover`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (bloqueioNeste?.id) {
+                                handleRemoverBloqueio(bloqueioNeste.id, bloqueioNeste.motivo);
+                              }
+                            }}
                           >
-                            <FaLock size={12} /> Bloquear
-                          </button>
-                        </>
-                      );
-                    })()}
-                  </div>
+                            <FaLock size={12} />
+                            <span className="bloqueio-remover-hint">✕</span>
+                          </div>
+                        ) : horariosInfo?.mensagem ? (
+                          /* PRIORIDADE 3: Sem agenda configurada */
+                          <div className="slot-sem-agenda">-</div>
+                        ) : horariosInfo?.horarios_livres?.includes(horario) ? (
+                          /* PRIORIDADE 4: Horários disponíveis */
+                          <div className="slot-livre" title="Horário disponível - Clique para agendar">
+                            <div className="slot-livre-indicator"></div>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+
+          {/* Legenda */}
+          <div className="week-legend">
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#22c55e' }}></div>
+              <span>Agendada</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#3b82f6' }}></div>
+              <span>Confirmada</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#f59e0b' }}></div>
+              <span>Realizada</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#ef4444' }}></div>
+              <span>Cancelada</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-icon"><FaLock size={12} /></div>
+              <span>Bloqueado</span>
+            </div>
           </div>
         </div>
       ) : (
@@ -828,11 +992,90 @@ const Agenda = () => {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+                <div className="modal-footer-left">
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      handleDelete(editingConsulta.id);
+                    }}
+                    title="Deletar permanentemente"
+                  >
+                    <FaTrash /> Deletar
+                  </button>
+                </div>
+                <div className="modal-footer-right">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    Salvar
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showAgendamentoModal && selectedSlot && (
+        <div className="modal-overlay" onClick={() => setShowAgendamentoModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2><FaCalendarAlt /> Novo Agendamento</h2>
+              <button className="modal-close" onClick={() => setShowAgendamentoModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleCriarAgendamento}>
+              <div className="modal-body">
+                <div className="detail-group">
+                  <strong>Data:</strong>
+                  <span>{new Date(selectedSlot.date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                </div>
+                <div className="detail-group">
+                  <strong>Horário:</strong>
+                  <span>{selectedSlot.horario}</span>
+                </div>
+                <div className="detail-group">
+                  <strong>Médico:</strong>
+                  <span>Dr(a). {medicoSelecionado?.nome}</span>
+                </div>
+
+                <div className="form-group">
+                  <label className="label">Paciente *</label>
+                  <select
+                    className="input"
+                    value={novoAgendamento.paciente_id}
+                    onChange={(e) => setNovoAgendamento({ ...novoAgendamento, paciente_id: e.target.value })}
+                    required
+                  >
+                    <option value="">Selecione um paciente</option>
+                    {pacientes.map((paciente) => (
+                      <option key={paciente.id} value={paciente.id}>
+                        {paciente.nome} - {paciente.telefone}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="label">Observações</label>
+                  <textarea
+                    className="input"
+                    rows="3"
+                    value={novoAgendamento.observacoes}
+                    onChange={(e) => setNovoAgendamento({ ...novoAgendamento, observacoes: e.target.value })}
+                    placeholder="Informações adicionais sobre a consulta..."
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowAgendamentoModal(false)}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Salvar
+                  <FaCalendarAlt /> Agendar
                 </button>
               </div>
             </form>

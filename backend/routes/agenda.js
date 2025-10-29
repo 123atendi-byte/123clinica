@@ -65,9 +65,12 @@ router.get('/horarios-livres', (req, res) => {
         });
       }
 
-      // Verificar se há bloqueio para esta data
+      // Verificar se há bloqueio DIA INTEIRO para esta data
+      // Bloqueio dia inteiro = quando horario_inicio e horario_fim são NULL
       db.get(
-        'SELECT * FROM bloqueios_agenda WHERE medico_id = ? AND ? BETWEEN data_inicio AND data_fim',
+        `SELECT * FROM bloqueios_agenda
+         WHERE medico_id = ? AND ? BETWEEN data_inicio AND data_fim
+         AND horario_inicio IS NULL AND horario_fim IS NULL`,
         [medico_id, data],
         (err, bloqueio) => {
           if (err) {
@@ -75,6 +78,7 @@ router.get('/horarios-livres', (req, res) => {
           }
 
           if (bloqueio) {
+            // Bloqueio dia inteiro - bloqueia tudo
             return res.json({
               data,
               medico_id: parseInt(medico_id),
@@ -195,9 +199,11 @@ router.post('/', (req, res) => {
         });
       }
 
-      // Verificar se há bloqueio para esta data
+      // Verificar se há bloqueio DIA INTEIRO para esta data
       db.get(
-        'SELECT * FROM bloqueios_agenda WHERE medico_id = ? AND ? BETWEEN data_inicio AND data_fim',
+        `SELECT * FROM bloqueios_agenda
+         WHERE medico_id = ? AND ? BETWEEN data_inicio AND data_fim
+         AND horario_inicio IS NULL AND horario_fim IS NULL`,
         [medico_id, data_consulta],
         (err, bloqueio) => {
           if (err) {
@@ -210,11 +216,29 @@ router.post('/', (req, res) => {
             });
           }
 
-          // Verificar se o horário está disponível
+          // Verificar se o horário específico está em um bloqueio de horário
           db.get(
-            'SELECT * FROM consultas WHERE medico_id = ? AND data_consulta = ? AND horario = ? AND status != ?',
-            [medico_id, data_consulta, horario, 'cancelada'],
-            (err, row) => {
+            `SELECT * FROM bloqueios_agenda
+             WHERE medico_id = ? AND ? BETWEEN data_inicio AND data_fim
+             AND horario_inicio IS NOT NULL AND horario_fim IS NOT NULL
+             AND ? >= horario_inicio AND ? < horario_fim`,
+            [medico_id, data_consulta, horario, horario],
+            (err, bloqueioHorario) => {
+              if (err) {
+                return res.status(500).json({ error: 'Erro ao verificar bloqueios de horário' });
+              }
+
+              if (bloqueioHorario) {
+                return res.status(400).json({
+                  error: `Horário bloqueado: ${bloqueioHorario.motivo || 'Este horário está bloqueado'}`
+                });
+              }
+
+              // Verificar se o horário está disponível
+              db.get(
+                'SELECT * FROM consultas WHERE medico_id = ? AND data_consulta = ? AND horario = ? AND status != ?',
+                [medico_id, data_consulta, horario, 'cancelada'],
+                (err, row) => {
               if (err) {
                 return res.status(500).json({ error: 'Erro ao verificar disponibilidade' });
               }
@@ -254,6 +278,8 @@ router.post('/', (req, res) => {
               };
 
               tentarInserir();
+                }
+              );
             }
           );
         }

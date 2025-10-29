@@ -1,5 +1,28 @@
 .agenda {
   padding: 2rem;
+  background: #F6F7F9;
+  min-height: 100vh;
+}
+
+/* Modal footer com layout customizado */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.modal-footer-left {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modal-footer-right {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .agenda-filters {
@@ -185,6 +208,64 @@
 
 .detail-group span {
   color: #6b7280;
+}
+
+/* Header Compacto */
+.page-header-compact {
+  background: white;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.page-header-compact h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.medico-filter-compact,
+.date-filter-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+.input-compact {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  background: white;
+  min-width: 180px;
+}
+
+.input-compact:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
 }
 
 /* Visualização Semanal */
@@ -539,5 +620,476 @@
 
   .month-day-count {
     display: block;
+  }
+}
+
+/* ============================================
+   VISUALIZAÇÃO SEMANAL MODERNA
+   ============================================ */
+
+.week-view-modern {
+  background: white;
+  border-radius: 0;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+}
+
+.week-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.week-title-modern h2 {
+  margin: 0 0 0.25rem 0;
+  color: #1f2937;
+  font-size: 1.2rem;
+}
+
+.week-range {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.week-navigation-modern {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-icon {
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: #f9fafb;
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.week-grid-modern {
+  overflow: auto;
+  flex: 1;
+  margin-bottom: 1rem;
+}
+
+.week-days-header {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  gap: 2px;
+  background: #e5e7eb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.time-column-header {
+  background: #ffffff;
+  padding: 1.25rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-align: center;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.day-header-modern {
+  background: #ffffff;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.day-header-modern.today {
+  background: #f0fdf4;
+  position: relative;
+}
+
+.day-header-modern.today::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+}
+
+.day-name-modern {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.day-header-modern.today .day-name-modern {
+  color: #22c55e;
+}
+
+.day-subtitle-modern {
+  font-size: 0.7rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.status-bloqueado {
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.status-sem-agenda {
+  color: #9ca3af;
+}
+
+.status-disponivel {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.week-schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  background: #e5e7eb;
+  border: 1px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.time-row {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  gap: 2px;
+  background: #e5e7eb;
+}
+
+.time-label {
+  background: #ffffff;
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70px;
+}
+
+.time-slot {
+  background: #fafafa;
+  padding: 0.35rem;
+  min-height: 70px;
+  position: relative;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
+  overflow: hidden;
+}
+
+.time-slot.today {
+  background: #fefffe;
+  border-left: 3px solid #22c55e;
+}
+
+.time-slot:hover {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.slot-bloqueado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 100%;
+  color: #ef4444;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    #fee2e2 10px,
+    #fee2e2 20px
+  );
+  opacity: 0.7;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.slot-bloqueado:hover {
+  opacity: 1;
+  background: #fee2e2;
+}
+
+.bloqueio-remover-hint {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #dc2626;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.slot-bloqueado:hover .bloqueio-remover-hint {
+  opacity: 1;
+}
+
+.slot-sem-agenda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #d1d5db;
+  font-size: 1.2rem;
+}
+
+.slot-livre {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.slot-livre-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+  opacity: 0.3;
+}
+
+.slot-livre:hover .slot-livre-indicator {
+  background: #22c55e;
+  opacity: 0.6;
+}
+
+.consulta-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.consulta-slot:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-color: #22c55e;
+}
+
+.consulta-slot.agendada {
+  border-left: 2px solid #22c55e;
+}
+
+.consulta-slot.confirmada {
+  border-left: 2px solid #3b82f6;
+}
+
+.consulta-slot.realizada {
+  border-left: 2px solid #f59e0b;
+}
+
+.consulta-slot.cancelada {
+  border-left: 2px solid #ef4444;
+  opacity: 0.6;
+  background: #fee2e2;
+}
+
+.consulta-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.6rem;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.consulta-info-slot {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.consulta-name {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.consulta-details {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: #6b7280;
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.week-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.legend-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+/* Responsividade */
+@media (max-width: 1600px) {
+  .week-days-header,
+  .time-row {
+    grid-template-columns: 70px repeat(7, 1fr);
+  }
+
+  .time-label {
+    font-size: 0.7rem;
+    padding: 0.5rem;
+  }
+
+  .time-slot {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 1200px) {
+  .week-header-modern {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .week-navigation-modern {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .consulta-name {
+    font-size: 0.65rem;
+  }
+
+  .consulta-avatar {
+    width: 22px;
+    height: 22px;
+    font-size: 0.55rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .week-grid-modern {
+    overflow-x: scroll;
+  }
+
+  .week-days-header,
+  .time-row {
+    grid-template-columns: 60px repeat(7, minmax(90px, 1fr));
+  }
+
+  .day-name-modern {
+    font-size: 0.75rem;
+  }
+
+  .time-label {
+    font-size: 0.7rem;
+  }
+
+  .consulta-name {
+    font-size: 0.7rem;
+  }
+
+  .consulta-details {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .week-view-modern {
+    padding: 1rem;
+  }
+
+  .week-title-modern h2 {
+    font-size: 1.2rem;
+  }
+
+  .week-range {
+    font-size: 0.8rem;
+  }
+
+  .week-legend {
+    gap: 1rem;
+    font-size: 0.75rem;
+  }
+
+  .legend-color,
+  .legend-icon {
+    width: 12px;
+    height: 12px;
   }
 }
